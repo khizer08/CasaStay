@@ -29,7 +29,7 @@
     <!--map section-->
     <% if (listing.lat && listing.lng) { %>
     <div class="col-6 offset-3 mt-4 mb-4">
-        <h4>Location</h4>
+        <h4>Where you'll be</h4>
         <div id="map" data-lat="<%= listing.lat %>" data-lng="<%= listing.lng %>"></div>
     </div>
     <% } %>
@@ -85,12 +85,12 @@
 
             <button class="btn btn-outline-dark">Submit</button>
         </form>
-        <% } %>
-
         <hr>
-        <p><b>All Reviews</b></p>
-
+        <% } %>
+        
+        <% if(listing.reviews.length>0) {%>
         <div class="row">
+            <p><b>All Reviews</b></p>
             <% for (review of listing.reviews) { %>
             <div class="card col-5 ms-3 mb-3">
                 <div class="card-body">
@@ -106,5 +106,7 @@
             </div>
             <% } %>
         </div>
+        <% } %>
+
     </div>
 </div>
