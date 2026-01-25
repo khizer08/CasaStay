@@ -24,6 +24,22 @@ const listingSchema=new Schema({
     country:{
         type:String
     },
+
+    //map integration
+    lat: {
+    type: Number,
+    required: function () {
+        return this.location && this.country;
+    }
+    },
+    lng: {
+    type: Number,
+    required: function () {
+        return this.location && this.country;
+    }
+    },
+    //till here.
+
     reviews:[
         {
             type:Schema.Types.ObjectId,
