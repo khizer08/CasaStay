@@ -44,9 +44,9 @@ const sessionOption={// mentioning different session "options".
 
 
 //Home Page
-app.get("/",(req,res)=>{
-    res.send("home page");
-});
+// app.get("/",(req,res)=>{
+//     res.send("home page");
+// });
 
 
 app.use(session(sessionOption));// once we use this middleware ,for all routes a session default cookie will be sent to client .
