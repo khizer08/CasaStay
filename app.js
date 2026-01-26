@@ -47,7 +47,7 @@ async function main() {
 const store = new MongoStore({
     mongoUrl: dbUrl,
     crypto:{
-        secret:"mysupersecretcode"
+        secret:process.env.SECRET,
     },
     touchAfter: 24 * 3600,
 });
@@ -59,7 +59,7 @@ store.on("error",(err)=>{
 
 const sessionOptions={// mentioning different session "options".
     store,// mongo "store" variable information passed to session
-    secret: "mysupersecretcode",
+    secret: process.env.SECRET,
     resave:false,
     saveUninitialized:true,
     cookie:{
