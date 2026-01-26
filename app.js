@@ -61,6 +61,7 @@ passport.deserializeUser(User.deserializeUser());
 
 app.engine("ejs",ejsMate);
 
+const dbUrl=process.env.ATLASDB_URL;// connection string from atlas which is stored in .env
 
 main()
 .then(()=>{
@@ -69,7 +70,7 @@ main()
 .catch(err => console.log(err));
 
 async function main() {
-    await mongoose.connect('mongodb://127.0.0.1:27017/wanderlust');
+    await mongoose.connect(dbUrl);
 }
 
 app.use((req,res,next)=>{
