@@ -10,6 +10,7 @@ const methodOverride=require("method-override");
 const ejsMate=require("ejs-mate");
 const ExpressError=require("./utils/ExpressError.js");
 const session=require("express-session");
+const MongoStore = require("connect-mongo");
 const flash=require("connect-flash");
 const passport=require("passport");
 const LocalStrategy=require("passport-local");
@@ -31,7 +32,33 @@ app.use(express.urlencoded({extended:true}));
 app.use(methodOverride("_method"));
 app.use(express.static(path.join(__dirname,"public")));
 
-const sessionOption={// mentioning different session "options".
+const dbUrl=process.env.ATLASDB_URL;// connection string from atlas which is stored in .env
+
+main()
+.then(()=>{
+    console.log("connection successful");
+})
+.catch(err => console.log(err));
+
+async function main() {
+    await mongoose.connect(dbUrl);
+}
+
+const store = new MongoStore({
+    mongoUrl: dbUrl,
+    crypto:{
+        secret:"mysupersecretcode"
+    },
+    touchAfter: 24 * 3600,
+});
+
+
+store.on("error",(err)=>{
+    console.log("Error in mongo session url",err);
+});
+
+const sessionOptions={// mentioning different session "options".
+    store,// mongo "store" variable information passed to session
     secret: "mysupersecretcode",
     resave:false,
     saveUninitialized:true,
@@ -49,7 +76,7 @@ const sessionOption={// mentioning different session "options".
 // });
 
 
-app.use(session(sessionOption));// once we use this middleware ,for all routes a session default cookie will be sent to client .
+app.use(session(sessionOptions));// once we use this middleware ,for all routes a session default cookie will be sent to client .
 app.use(flash());// flash has to be used before the routes which requires the functionality of "flash".
 
 app.use(passport.initialize()); // middleware which initializes "passport".
@@ -61,17 +88,6 @@ passport.deserializeUser(User.deserializeUser());
 
 app.engine("ejs",ejsMate);
 
-const dbUrl=process.env.ATLASDB_URL;// connection string from atlas which is stored in .env
-
-main()
-.then(()=>{
-    console.log("connection successful");
-})
-.catch(err => console.log(err));
-
-async function main() {
-    await mongoose.connect(dbUrl);
-}
 
 app.use((req,res,next)=>{
     res.locals.success=req.flash("success");
