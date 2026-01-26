@@ -12,4 +12,5 @@ document.addEventListener("DOMContentLoaded", () => {
   }).addTo(map);
 
   L.marker([lat, lng]).addTo(map);
+  
 });
