@@ -117,6 +117,10 @@ body{
     padding-right: 0;
 }
 
+.price{
+    font-weight: 500;
+    text-decoration: underline;
+}
 /* map styling*/
 #map {
   height: 300px;
