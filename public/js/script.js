@@ -31,3 +31,63 @@ let taxSwitch=document.getElementById("switchCheckDefault");
             }
         }
     });
+
+//arrow-btn-next-icon-functionality
+const filters = document.getElementById("filters");
+const arrowBtn = document.querySelector(".arrow-btn");
+const filterItems = document.querySelectorAll("#filters .filter");
+
+let currentPage = 0;
+
+function getIconsPerView() {
+  const filterWidth = filters.clientWidth;
+  const iconWidth =
+    filterItems[0].offsetWidth +
+    parseInt(getComputedStyle(filterItems[0]).marginRight);
+
+  return Math.max(1, Math.floor(filterWidth / iconWidth));
+}
+
+arrowBtn.addEventListener("click", (e) => {
+  e.preventDefault();
+
+  const iconsPerView = getIconsPerView();
+  const maxPage = Math.ceil(filterItems.length / iconsPerView) - 1;
+
+  currentPage = Math.min(currentPage, maxPage);
+
+
+  if (currentPage < maxPage) {
+    currentPage++;
+  }else{
+    currentPage=0;
+  }
+
+  const scrollAmount =
+    currentPage *
+    iconsPerView *
+    (filterItems[0].offsetWidth +
+      parseInt(getComputedStyle(filterItems[0]).marginRight));
+
+  filters.scrollTo({
+    left: scrollAmount,
+    behavior: "smooth"
+  });
+});
+
+function updateArrowVisibility() {
+  if (filters.scrollWidth > filters.clientWidth) {
+    arrowBtn.style.display = "flex";
+  } else {
+    arrowBtn.style.display = "none";
+  }
+}
+
+window.addEventListener("load", ()=>{
+  requestAnimationFrame(updateArrowVisibility)
+});
+window.addEventListener("resize", () => {
+  currentPage = 0;
+  filters.scrollTo({ left: 0 });
+  updateArrowVisibility();
+});
