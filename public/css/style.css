@@ -130,12 +130,45 @@ body{
 }
 
 /* icons and toggler */
-#filters{
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
+
+/* main icons , arrow and toggler container */
+.filters-wrapper {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap:1rem;
 }
 
+/* icons and arrow container */
+.filters-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;  
+  min-width: 0;
+}
+
+/* All icons */
+#filters{
+    flex: 1;
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    overflow-x: auto;  
+}
+#filters::-webkit-scrollbar {
+  display: none;       
+}
+#filters::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  width: 3rem;
+  height: 100%;
+  pointer-events: none;
+  background: linear-gradient(to right, transparent, white);
+}
+
+/* individual icons */
 .filter{
     text-align: center;
     margin-right: 2rem;
@@ -146,11 +179,11 @@ body{
     opacity: 1;
     cursor: pointer;
 }
-
 .filter p{
     font-size: 0.8rem;
 }
 
+/* toggler-style */
 .tax-info{
     display: none;
 }
@@ -162,7 +195,36 @@ body{
     margin-left: 2rem;
     display: flex;
     align-items: center;
+    flex-shrink: 0;
+    margin-left: auto;
 }
+
+/* arrow style */
+.arrow-btn{
+    height: 2rem;
+    width: 2rem;
+    border:1px solid black;
+    border-radius: 50%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    margin-top: 15px;
+}
+
+.arrow-btn div i{
+    color:#222222
+}
+
+
+/* icons-toggler-responsiveness */
+@media (max-width: 1288px) {
+  .tax-toggle {
+    margin-left: 0;
+    margin-top: 0.75rem;
+  }
+} 
+
 
 /* Search bar */
 .search-btn{
