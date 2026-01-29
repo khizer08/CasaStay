@@ -8,19 +8,78 @@ body{
     flex:1;
 }
 
-.navbar{
-    height: 5rem;
-    background-color: white;
+/* Navbar */
+.navbar {
+  height: 5rem;
+  background-color: white;
 }
 
-.fa-compass{
-    color: #fe424d;
-    font-size: 2rem;
+.fa-compass {
+  color: #fe424d;
+  font-size: 2rem;
 }
 
-.nav-link{
-    color: #222222 !important;
+.nav-link {
+  color: #222222 !important;
 }
+
+/* Search input safety */
+.search-inp {
+    flex:1;
+    min-width: 0;      
+}
+
+/* hamberger menu options */
+.offcanvas {
+  box-shadow: -4px 0 20px rgba(0,0,0,0.15);
+}
+
+
+@media (max-width: 768px) {
+  .navbar .container-fluid {
+    flex-wrap: nowrap;
+  }
+
+  .navbar form {
+    position: static;
+    transform: none;
+    flex: 1;
+    margin: 0 0.5rem;
+    width: 100%;
+  }
+
+  .navbar-toggler {
+    flex-shrink: 0;
+    margin-left: 0.5rem;
+  }
+
+}
+
+@media (max-width:464px){
+    .search-inp {
+    padding-left: 0.5rem !important;
+    padding-right: 0.1rem !important; 
+  }
+  .offcanvas {
+    width: 50vw;          /* ⬅️ half screen */
+    max-width: 50vw;
+  }
+}
+
+@media (min-width: 1240px) {
+  .navbar .container-fluid {
+    position: relative;
+  }
+
+  .navbar form {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    max-width: 50%;
+    width: 100%;
+  }
+}
+
 
 /* footer */
 .f-info-links a{
