@@ -200,6 +200,47 @@ body{
     font-weight: 500;
     text-decoration: underline;
 }
+
+
+/* individual review-card section */
+.review-card-body{
+  padding:0.1rem;
+} 
+
+.review-delete-card-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.review-delete-card-body form {
+  margin-top: auto;
+}
+
+/* Scale down stars */
+.starability-result {
+  transform: scale(0.7);
+  transform-origin: left center;
+}
+
+/* responsiveness of review-card for 576px  */
+@media (max-width: 576px) {
+
+  /* 2 cards per row */
+  .review-cards > div {
+    flex: 0 0 50%;
+    max-width: 50%;
+    box-sizing: border-box;
+  }
+
+  /* Prevent text overflow */
+  .review-delete-card-body {
+    padding: 0.5rem;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+
+}
+
 /* map styling*/
 #map {
   height: 300px;
