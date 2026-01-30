@@ -1,0 +1,57 @@
+if (process.env.NODE_ENV !== "production") {
+  require("dotenv").config();
+}
+
+const mongoose = require("mongoose");
+const Listing = require("../models/listing.js");
+const User = require("../models/user.js");
+const initData = require("./data.js");
+const { getCoordinates } = require("../utils/geocode.js");
+
+const dbUrl = process.env.ATLASDB_URL;
+
+async function connectDB() {
+  await mongoose.connect(dbUrl);
+  console.log("DB connected");
+}
+
+// SAFETY CHECK
+async function seedDB() {
+  if (process.env.NODE_ENV === "production") {
+    console.log("Seeding PRODUCTION database");
+  }
+
+  // wipe data , which was in db.
+  await Listing.deleteMany({});
+  await User.deleteMany({});
+
+  // create admin user(this is default user).
+  const admin = new User({
+    username: "admin",
+    email: "admin@wanderlust.com",
+  });
+
+  await User.register(admin, "admin123");
+
+  // insert listings
+  for (let obj of initData.data) {
+    const coords = await getCoordinates(obj.location, obj.country);
+    if (!coords) continue;
+
+    obj.owner = admin._id;
+    obj.lat = coords.lat;
+    obj.lng = coords.lng;
+
+    await Listing.create(obj);
+  }
+
+  console.log("Database seeded successfully");
+}
+
+connectDB()
+  .then(seedDB)
+  .then(() => mongoose.connection.close())
+  .catch((err) => {
+    console.error(err);
+    mongoose.connection.close();
+  });
