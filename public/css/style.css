@@ -23,11 +23,30 @@ body{
   color: #222222 !important;
 }
 
-/* Search input safety */
-.search-inp {
+
+/* Search bar */
+.search-btn{
+    background-color: #fe424d;
+    color: #fff;
+    border-radius: 25px;
+    padding:0 1rem 0 1rem;
+  }
+  .search-btn:hover{
+    background-color: #fe424d;
+    color: #fff;
+  }
+  .search-btn i{
+    display: inline;
+    margin-right: 0.5rem;
+  }
+
+  .search-inp{
+    border-radius: 25px;
+    padding: 0.5rem 3rem 0.5rem 3rem;
+    font-size: 1rem;
     flex:1;
-    min-width: 0;      
-}
+    min-width: 0;
+  }
 
 /* hamberger menu options */
 .offcanvas {
@@ -61,7 +80,7 @@ body{
     padding-right: 0.1rem !important; 
   }
   .offcanvas {
-    width: 50vw;          /* ⬅️ half screen */
+    width: 50vw;          
     max-width: 50vw;
   }
 }
@@ -76,7 +95,7 @@ body{
     left: 50%;
     transform: translateX(-50%);
     max-width: 50%;
-    width: 100%;
+    width: 90%;
   }
 }
 
@@ -284,26 +303,3 @@ body{
     margin-top: 0.75rem;
   }
 } 
-
-
-/* Search bar */
-.search-btn{
-    background-color: #fe424d;
-    color: #fff;
-    border-radius: 25px;
-    padding:0 1rem 0 1rem;
-  }
-  .search-btn:hover{
-    background-color: #fe424d;
-    color: #fff;
-  }
-  .search-btn i{
-    display: inline;
-    margin-right: 0.5rem;
-  }
-
-  .search-inp{
-    border-radius: 25px;
-    padding: 0.5rem 3rem 0.5rem 3rem;
-    font-size: 1rem;
-  }
