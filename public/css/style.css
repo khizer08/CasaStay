@@ -180,6 +180,12 @@ body{
     margin-bottom: 1rem;
 }
 
+@media (max-width:400px){
+  .edit-img img{
+    width: 100%;
+  }
+}
+
 /* Show Page */
 
 .show-img{
