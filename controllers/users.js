@@ -14,14 +14,13 @@ module.exports.signup = async (req, res, next) => {
     console.log(registeredUser);
 
     // SEND WELCOME EMAIL (after user is saved)
-    sendEmail({
+    await sendEmail({
       to: registeredUser.email,
       subject: "Welcome to Wanderlust 🌍",
       html: `
-        <h2>Welcome to Wanderlust, ${registeredUser.username}!</h2>
-        <p>Your account has been created successfully.</p>
-        <p>Start exploring amazing places.</p>
-      `,
+    <h2>Welcome to Wanderlust, ${registeredUser.username}!</h2>
+    <p>Your account has been created successfully.</p>
+  `,
     });
 
     req.login(registeredUser, (err) => {

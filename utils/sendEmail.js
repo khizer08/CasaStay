@@ -9,16 +9,17 @@ const transporter = nodemailer.createTransport({
 });
 
 const sendEmail = async ({ to, subject, html }) => {
-  try {
-    await transporter.sendMail({
-      from: `"Wanderlust" <${process.env.EMAIL_USER}>`,
-      to,
-      subject,
-      html,
-    });
-  } catch (err) {
-    console.error("Email error:", err.message);
-  }
+  console.log("📧 Attempting to send email to:", to);
+  console.log("📧 Using EMAIL_USER:", process.env.EMAIL_USER);
+
+  await transporter.sendMail({
+    from: `"Wanderlust" <${process.env.EMAIL_USER}>`,
+    to,
+    subject,
+    html,
+  });
+
+  console.log("✅ Email sent successfully");
 };
 
 module.exports = sendEmail;
