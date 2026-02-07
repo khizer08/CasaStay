@@ -1,4 +1,5 @@
 const User = require("../models/user.js");
+const sendEmail = require("../utils/sendEmail");
 
 module.exports.renderSignupForm = (req, res) => {
   // this module is used to render a form so that a user can make their account.
