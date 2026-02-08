@@ -1,5 +1,7 @@
 const User = require("../models/user.js");
 const sendEmail = require("../utils/sendEmail");
+const ejs = require("ejs");
+const path = require("path");
 
 module.exports.renderSignupForm = (req, res) => {
   // this module is used to render a form so that a user can make their account.
@@ -15,53 +17,17 @@ module.exports.signup = async (req, res, next) => {
     console.log(registeredUser);
 
     // SEND WELCOME EMAIL (after user is saved)
+    const emailHTML = await ejs.renderFile(
+      path.join(__dirname, "../views/emails/welcome.ejs"),
+      { username: registeredUser.username },
+    );
+
     sendEmail({
       to: registeredUser.email,
       subject: "Welcome to CasaStay 🏡 Your journey starts here!",
-      html: `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px;">
-      <h2 style="color: #ff385c;">Welcome to CasaStay, ${registeredUser.username.toUpperCase()}! &#128522;</h2>
-
-      <!-- IMAGE -->
-    <img 
-      src="https://wanderlust-0vm5.onrender.com/images/CasaStay_Brand.png"
-      alt="Welcome to CasaStay"
-      style="
-        width: 100%;
-        max-width: 520px;
-        display: block;
-        margin: 20px auto;
-        border-radius: 12px;
-      "
-    />
-
-      <p>
-        We’re excited to have you on board. Your account has been created successfully,
-        and you’re now ready to explore unique stays and unforgettable experiences.
-      </p>
-
-      <p>
-        🌍 Discover new destinations<br/>
-        🏡 Find stays you’ll love<br/>
-        ✨ Travel with comfort and confidence
-      </p>
-
-      <p>
-        If you ever need help, we’re just a click away.
-      </p>
-
-      <p style="margin-top: 30px;">
-        Happy exploring!<br/>
-        <strong>— Team CasaStay</strong>
-      </p>
-
-      <hr style="margin-top: 40px;" />
-      <p style="font-size: 12px; color: #777;">
-        You received this email because you signed up for CasaStay.
-      </p>
-    </div>
-  `,
+      html: emailHTML,
     });
+    // email logic till here.
 
     req.login(registeredUser, (err) => {
       if (err) {
