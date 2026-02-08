@@ -1,5 +1,6 @@
 const User = require("../models/user.js");
 const sendEmail = require("../utils/sendEmail");
+const welcomeStyle = require("../views/emails/welcomeStyle"); // email styling file.
 const ejs = require("ejs");
 const path = require("path");
 
@@ -19,10 +20,10 @@ module.exports.signup = async (req, res, next) => {
     // SEND WELCOME EMAIL (after user is saved)
     const emailHTML = await ejs.renderFile(
       path.join(__dirname, "../views/emails/welcome.ejs"),
-      { username: registeredUser.username },
+      { username: registeredUser.username, welcomeStyle },
     );
 
-    sendEmail({
+    await sendEmail({
       to: registeredUser.email,
       subject: "Welcome to CasaStay 🏡 Your journey starts here!",
       html: emailHTML,
