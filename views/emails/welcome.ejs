@@ -1,0 +1,41 @@
+<% const welcomeStyle = require("./welcomeStyle"); %>
+
+<!DOCTYPE html>
+<html>
+  <body>
+    <div style="<%= welcomeStyle.container %>">
+
+      <h2 style="<%= welcomeStyle.heading %>">
+        Welcome to CasaStay, <%= username.toUpperCase() %>! &#128522;
+      </h2>
+
+      <img
+        src="https://wanderlust-0vm5.onrender.com/images/CasaStay_Brand.png"
+        alt="Welcome to CasaStay"
+        style="<%= welcomeStyle.image %>"
+      />
+
+      <p>
+        We&rsquo;re excited to have you on board. Your account has been created successfully.
+      </p>
+
+      <p>
+        &#127757; Discover new destinations<br/>
+        &#127969; Find stays you&rsquo;ll love<br/>
+        &#127776; Travel with comfort and confidence
+      </p>
+
+      <p>
+        Happy exploring!<br/>
+        <strong>&mdash; Team CasaStay</strong>
+      </p>
+
+      <hr />
+
+      <p style="<%= welcomeStyle.footer %>">
+        You received this email because you signed up for CasaStay.
+      </p>
+
+    </div>
+  </body>
+</html>
