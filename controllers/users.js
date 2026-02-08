@@ -20,7 +20,20 @@ module.exports.signup = async (req, res, next) => {
       subject: "Welcome to CasaStay 🏡 Your journey starts here!",
       html: `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px;">
-      <h2 style="color: #ff385c;">Welcome to CasaStay, ${registeredUser.username}! 🎉</h2>
+      <h2 style="color: #ff385c;">Welcome to CasaStay, ${registeredUser.username.toUpperCase()}! &#128522;</h2>
+
+      <!-- IMAGE -->
+    <img 
+      src="https://wanderlust-0vm5.onrender.com/images/CasaStay_Brand.png"
+      alt="Welcome to CasaStay"
+      style="
+        width: 100%;
+        max-width: 520px;
+        display: block;
+        margin: 20px auto;
+        border-radius: 12px;
+      "
+    />
 
       <p>
         We’re excited to have you on board. Your account has been created successfully,
