@@ -17,13 +17,37 @@ module.exports.signup = async (req, res, next) => {
     // SEND WELCOME EMAIL (after user is saved)
     sendEmail({
       to: registeredUser.email,
-      subject: "Welcome to Wanderlust 🌍",
+      subject: "Welcome to CasaStay 🏡 Your journey starts here!",
       html: `
-    <h2>Welcome to Wanderlust, ${registeredUser.username}!</h2>
-    <p>Your account has been created successfully.</p>
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px;">
+      <h2 style="color: #ff385c;">Welcome to CasaStay, ${registeredUser.username}! 🎉</h2>
+
+      <p>
+        We’re excited to have you on board. Your account has been created successfully,
+        and you’re now ready to explore unique stays and unforgettable experiences.
+      </p>
+
+      <p>
+        🌍 Discover new destinations<br/>
+        🏡 Find stays you’ll love<br/>
+        ✨ Travel with comfort and confidence
+      </p>
+
+      <p>
+        If you ever need help, we’re just a click away.
+      </p>
+
+      <p style="margin-top: 30px;">
+        Happy exploring!<br/>
+        <strong>— Team CasaStay</strong>
+      </p>
+
+      <hr style="margin-top: 40px;" />
+      <p style="font-size: 12px; color: #777;">
+        You received this email because you signed up for CasaStay.
+      </p>
+    </div>
   `,
-    }).catch((err) => {
-      console.error("Email error:", err.message);
     });
 
     req.login(registeredUser, (err) => {
