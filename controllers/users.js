@@ -1,6 +1,7 @@
 const User = require("../models/user.js");
 const sendEmail = require("../utils/sendEmail"); // mail sending logic.
-const welcomeStyle = require("../views/emails/welcomeStyle"); // email styling file.
+const welcomeStyle = require("../views/emails/welcomeStyle"); // welcome email styling file.
+const otpStyle = require("../views/emails/otpStyle"); // otp email styling file.
 const ejs = require("ejs");
 const path = require("path");
 const crypto = require("crypto");
@@ -39,6 +40,7 @@ module.exports.signup = async (req, res, next) => {
       {
         username: registeredUser.username,
         otp,
+        otpStyle,
       },
     );
 
@@ -62,45 +64,43 @@ module.exports.signup = async (req, res, next) => {
   }
 };
 
-
 module.exports.renderVerifyEmailForm = (req, res) => {
   // this module is used to render a form so that a user can enter the OTP for verification.
   res.render("users/verifyEmail.ejs");
 };
 
-
 // verifying email
 module.exports.verifyEmail = async (req, res, next) => {
   try {
     const { otp } = req.body;
-    
+
     if (!otp) {
       req.flash("error", "OTP is required");
       return res.redirect("/verify-email");
     }
-    
+
     // Hash incoming OTP
     const otpHash = crypto.createHash("sha256").update(otp).digest("hex");
-    
+
     // Find valid user
     const user = await User.findOne({
       emailOTPHash: otpHash,
       emailOTPExpires: { $gt: Date.now() },
     });
-    
+
     if (!user) {
       req.flash("error", "Invalid or expired OTP");
       return res.redirect("/verify-email");
     }
-    
+
     // Mark email verified
     user.isEmailVerified = true;
     user.emailOTPHash = undefined;
     user.emailOTPExpires = undefined;
     user.emailOTPAttempts = 0;
-    
+
     await user.save();
-    
+
     //Send Welcome Email AFTER otp verification
     const welcomeHTML = await ejs.renderFile(
       path.join(__dirname, "../views/emails/welcome.ejs"),
@@ -109,13 +109,13 @@ module.exports.verifyEmail = async (req, res, next) => {
         welcomeStyle,
       },
     );
-    
+
     await sendEmail({
       to: user.email,
       subject: "Welcome to CasaStay 🏡 Your journey starts here!",
       html: welcomeHTML,
     });
-    
+
     // Login AFTER verification
     req.login(user, (err) => {
       if (err) {
@@ -129,7 +129,6 @@ module.exports.verifyEmail = async (req, res, next) => {
     res.redirect("/signup");
   }
 };
-
 
 module.exports.renderLoginForm = (req, res) => {
   // this module is used to render a login form so that a user can login.
