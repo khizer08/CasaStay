@@ -33,4 +33,7 @@ router
   .get(userController.renderVerifyEmailForm)
   .post(wrapAsync(userController.verifyEmail));
 
+// Resend OTP
+router.post("/resend-otp", wrapAsync(userController.resendOTP));
+
 module.exports = router;

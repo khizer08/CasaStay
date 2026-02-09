@@ -39,7 +39,7 @@ module.exports.signup = async (req, res, next) => {
     const otpHash = hashOTP(otp);
 
     registeredUser.emailOTPHash = otpHash;
-    registeredUser.emailOTPExpires = Date.now() + 10 * 60 * 1000; // 10 min
+    registeredUser.emailOTPExpires = Date.now() + 1 * 60 * 1000; // 1 min
     registeredUser.emailOTPAttempts = 0;
     registeredUser.isEmailVerified = false;
 
@@ -141,6 +141,63 @@ module.exports.verifyEmail = async (req, res, next) => {
     res.redirect("/signup");
   }
 };
+
+// resend otp logic.
+module.exports.resendOTP = async (req, res) => {
+  try {
+    // Find the latest unverified user
+    const user = await User.findOne({
+      isEmailVerified: false,
+    }).sort({ createdAt: -1 });
+
+    if (!user) {
+      req.flash("error", "No pending verification found. Please sign up again.");
+      return res.redirect("/signup");
+    }
+
+    // OPTIONAL: Enforce resend cooldown (1 min)
+    if (
+      user.emailOTPExpires &&
+      Date.now() < user.emailOTPExpires - 9 * 60 * 1000
+    ) {
+      req.flash("error", "Please wait before resending OTP.");
+      return res.redirect("/verify-email");
+    }
+
+    // Generate NEW OTP
+    const otp = generateOTP();
+    const otpHash = hashOTP(otp);
+
+    user.emailOTPHash = otpHash;
+    user.emailOTPExpires = Date.now() + 10 * 60 * 1000; // 10 mins validity
+    user.emailOTPAttempts = 0;
+
+    await user.save();
+
+    // Send OTP email
+    const otpEmailHTML = await ejs.renderFile(
+      path.join(__dirname, "../views/emails/otp.ejs"),
+      {
+        username: user.username,
+        otp,
+        otpStyle: require("../views/emails/otpStyle"),
+      }
+    );
+
+    await sendEmail({
+      to: user.email,
+      subject: "Your new OTP — CasaStay 🔐",
+      html: otpEmailHTML,
+    });
+
+    req.flash("success", "A new OTP has been sent to your email.");
+    res.redirect("/verify-email");
+  } catch (err) {
+    req.flash("error", err.message);
+    res.redirect("/verify-email");
+  }
+};
+// logic for resend otp ends.
 
 module.exports.renderLoginForm = (req, res) => {
   // this module is used to render a login form so that a user can login.
