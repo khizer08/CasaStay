@@ -1,5 +1,5 @@
 const User = require("../models/user.js");
-const sendEmail = require("../utils/sendEmail");
+const sendEmail = require("../utils/sendEmail");// mail sending logic.
 const welcomeStyle = require("../views/emails/welcomeStyle"); // email styling file.
 const ejs = require("ejs");
 const path = require("path");

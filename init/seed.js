@@ -27,11 +27,11 @@ async function seedDB() {
 
   // create admin user(this is default user).
   const admin = new User({
-    username: "admin",
-    email: "admin@wanderlust.com",
+    username: "khizer",
+    email: "khizer@wanderlust.com",
   });
 
-  await User.register(admin, "admin123");
+  await User.register(admin, "khizer123");
 
   // insert listings
   for (let obj of initData.data) {
