@@ -17,6 +17,18 @@ module.exports.signup = async (req, res, next) => {
   try {
     let { username, email, password } = req.body;
 
+    // CHECK IF EMAIL ALREADY EXISTS
+    const existingEmail = await User.findOne({ email });
+
+    if (existingEmail) {
+      req.flash(
+        "error",
+        "An account with this email already exists. Please log in instead."
+      );
+      return res.redirect("/login");
+    }
+    // check logic ends here.
+
     // create user
     const newUser = new User({ email, username });
     const registeredUser = await User.register(newUser, password);

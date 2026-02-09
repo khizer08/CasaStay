@@ -29,6 +29,7 @@ async function seedDB() {
   const admin = new User({
     username: "khizer",
     email: "khizer@wanderlust.com",
+    isEmailVerified:true,
   });
 
   await User.register(admin, "khizer123");
