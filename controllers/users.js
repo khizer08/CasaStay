@@ -23,7 +23,7 @@ module.exports.signup = async (req, res, next) => {
     if (existingEmail) {
       req.flash(
         "error",
-        "An account with this email already exists. Please log in instead."
+        "An account with this email already exists. Please log in instead.",
       );
       return res.redirect("/login");
     }
@@ -151,7 +151,10 @@ module.exports.resendOTP = async (req, res) => {
     }).sort({ createdAt: -1 });
 
     if (!user) {
-      req.flash("error", "No pending verification found. Please sign up again.");
+      req.flash(
+        "error",
+        "No pending verification found. Please sign up again.",
+      );
       return res.redirect("/signup");
     }
 
@@ -181,7 +184,7 @@ module.exports.resendOTP = async (req, res) => {
         username: user.username,
         otp,
         otpStyle: require("../views/emails/otpStyle"),
-      }
+      },
     );
 
     await sendEmail({
@@ -206,9 +209,54 @@ module.exports.renderLoginForm = (req, res) => {
 
 module.exports.login = async (req, res) => {
   // this module decides after login what actions to be taken.
+
+  const user = req.user; // Passport sets this
+
+  //  BLOCK login if email not verified
+  if (!user.isEmailVerified) {
+    // Generate fresh OTP
+    const otp = generateOTP();
+    const otpHash = hashOTP(otp);
+
+    user.emailOTPHash = otpHash;
+    user.emailOTPExpires = Date.now() + 1 * 60 * 1000; // 1 min
+    user.emailOTPAttempts = 0;
+    await user.save();
+
+    // Send OTP email
+    const otpEmailHTML = await ejs.renderFile(
+      path.join(__dirname, "../views/emails/otp.ejs"),
+      {
+        username: user.username,
+        otp,
+        otpStyle: require("../views/emails/otpStyle"),
+      },
+    );
+
+    await sendEmail({
+      to: user.email,
+      subject: "Verify your email — CasaStay 🔐",
+      html: otpEmailHTML,
+    });
+
+    // Kill session immediately
+    req.logout(() => {});
+
+    req.flash(
+      "error",
+      "Email not verified. A new OTP has been sent to your email.",
+    );
+
+    return res.redirect("/verify-email");
+  }
+
+  // verified user - normal login
   req.flash("success", "Welcome back to Wanderlust");
-  let redirectUrl = res.locals.redirectUrl || "/listings";
-  res.redirect(redirectUrl);
+  const redirectUrl = res.locals.redirectUrl || "/listings";
+  // FORCE session save before redirect
+  req.session.save(() => {
+    res.redirect(redirectUrl);
+  });
 };
 
 module.exports.logout = (req, res, next) => {
