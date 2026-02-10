@@ -29,8 +29,17 @@ const userSchema = new Schema({
     type: Number,
     default: 0,
   },
+  // till here
+
+  // resetOTP
+  resetOTPHash: {
+    type: String,
+  },
+  resetOTPExpires: {
+    type: Date,
+  },
+  // till here
 });
-// till here
 
 userSchema.plugin(passportLocalMongoose);
 
