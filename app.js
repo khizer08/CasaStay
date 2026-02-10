@@ -15,6 +15,7 @@ const flash=require("connect-flash");
 const passport=require("passport");
 const LocalStrategy=require("passport-local");
 const User=require("./models/user.js");
+const bookingRouter = require("./routes/booking.js");
 
 
 const listingRouter=require("./routes/listing.js"); // requiring the whole "listings" related routes.
@@ -103,7 +104,7 @@ app.use((req,res,next)=>{
 app.use("/listings",listingRouter); // using the "listingRouter" route, any route which is found in the "listings" module will default start with "/listings".
 app.use("/listings/:id/reviews",reviewRouter); // // using the "reviewRouter" route, any route which is found in the "reviews" module will default start with "/reviews".
 app.use("/",userRouter); // // using the "users" route, any route which is found in the "users" module will default start with "/".
-
+app.use("/", bookingRouter);
 
 
 //for any route that doesnt exist.

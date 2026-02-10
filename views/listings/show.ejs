@@ -53,6 +53,33 @@
             <hr>
         </div>
 
+        <!--Booking part-->
+        <% if (currUser && !listing.owner._id.equals(currUser._id)) { %>
+            <div class="col-12 col-lg-6 col-md-8 col-sm-8 offset-lg-3 offset-md-2 mt-4">
+                <h4>Book this place</h4>
+
+                <form action="/listings/<%= listing._id %>/book" method="POST">
+                    <div class="row">
+                        <div class="col-6 mb-2">
+                            <label class="form-label">Check-in</label>
+                            <input type="date" name="checkIn" class="form-control" min="<%= new Date().toISOString().split('T')[0] %>" required> <!--Prevent selecting past dates-->
+                        </div>
+
+                        <div class="col-6 mb-2">
+                            <label class="form-label">Check-out</label>
+                            <input type="date" name="checkOut" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-dark mt-2">
+                        Reserve
+                    </button>
+                </form>
+            </div>
+        <% } %>
+        <!--ends here-->
+
+
         <% if (currUser) { %>
         <h4>Leave a Review</h4>
         <form method="POST"
