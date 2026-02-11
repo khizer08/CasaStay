@@ -18,6 +18,16 @@ module.exports.createBooking = async (req, res) => {
   const startDate = new Date(checkIn);
   const endDate = new Date(checkOut);
 
+  // prevent booking past dates
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // normalize
+
+  if (startDate < today) {
+    req.flash("error", "You cannot book past dates.");
+    return res.redirect(`/listings/${id}`);
+  }
+  // past date validation ends here.
+
   if (startDate >= endDate) {
     req.flash("error", "Check-out must be after check-in.");
     return res.redirect(`/listings/${id}`);
