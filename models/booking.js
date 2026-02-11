@@ -55,8 +55,8 @@ const bookingSchema = new Schema(
 
     bookingStatus: {
       type: String,
-      enum: ["active", "cancelled"],
-      default: "active",
+      enum: ["pending", "active", "cancelled"],
+      default: "pending",
     },
 
     paymentOTPHash: {

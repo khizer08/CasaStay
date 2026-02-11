@@ -58,15 +58,14 @@
               <% if (booking.bookingStatus === "active") { %>
                 <form 
                   method="POST"
-                  action="/bookings/<%= booking._id %>?_method=DELETE"
+                  action="/bookings/<%= booking._id %>/send-cancel-otp"
                 >
                   <button class="btn btn-outline-danger btn-sm">
                     Cancel
                   </button>
                 </form>
-              <% } else {%>
-                <span class="text-danger">Cancelled</span>
               <% } %>
+
             </div>
 
           </div>

@@ -1,0 +1,16 @@
+<% layout('/layouts/boilerplate') -%>
+
+<div class="container mt-5">
+  <h3>Enter Payment OTP</h3>
+
+  <div class="card p-4 mt-3">
+    <form action="/bookings/<%= booking._id %>/verify-payment" method="POST">
+      <div class="mb-3">
+        <label class="form-label">Enter OTP</label>
+        <input type="text" name="otp" class="form-control" required />
+      </div>
+
+      <button class="btn btn-dark">Verify & Confirm Payment</button>
+    </form>
+  </div>
+</div>

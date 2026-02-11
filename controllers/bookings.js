@@ -172,7 +172,27 @@ module.exports.sendPaymentOTP = async (req, res) => {
   res.redirect(`/bookings/${id}/verify-payment`);
 };
 
+module.exports.renderVerifyPaymentPage = async (req, res) => {
+  // this module is used to render the OTP verification page before confirming payment.
+  let { id } = req.params;
+
+  const booking = await Booking.findById(id);
+
+  if (!booking) {
+    req.flash("error", "Booking not found.");
+    return res.redirect("/listings");
+  }
+
+  if (!booking.user.equals(req.user._id)) {
+    req.flash("error", "Unauthorized.");
+    return res.redirect("/listings");
+  }
+
+  res.render("bookings/verifyPayment.ejs", { booking });
+};
+
 module.exports.verifyPaymentOTP = async (req, res) => {
+  console.log("BODY:", req.body);
   // this module is used to verify the OTP being sent is correct or not.
   let { id } = req.params;
   const { otp } = req.body;
@@ -224,17 +244,22 @@ module.exports.verifyPaymentOTP = async (req, res) => {
 };
 
 module.exports.renderConfirmationPage = async (req, res) => {
-  // this module is used to display page after successfull payment.
-  let { id } = req.params;
+  const { id } = req.params;
 
   const booking = await Booking.findById(id).populate("listing");
 
-  if (!booking) {
+  if (!booking || !booking.listing) {
     req.flash("error", "Booking not found.");
     return res.redirect("/listings");
   }
 
-  res.render("bookings/confirmation.ejs", { booking });
+  // ownership protection (IMPORTANT)
+  if (!booking.user.equals(req.user._id)) {
+    req.flash("error", "Unauthorized access.");
+    return res.redirect("/listings");
+  }
+
+  res.render("bookings/confirmation", { booking });
 };
 
 module.exports.renderMyBookings = async (req, res) => {
@@ -249,6 +274,45 @@ module.exports.renderMyBookings = async (req, res) => {
     .sort({ createdAt: -1 });
 
   res.render("bookings/myBookings.ejs", { bookings });
+};
+
+module.exports.cancelBooking = async (req, res) => {
+  // this module is used to initiate cancellation flow.
+  let { id } = req.params;
+
+  const booking = await Booking.findById(id);
+
+  if (!booking) {
+    req.flash("error", "Booking not found.");
+    return res.redirect("/bookings");
+  }
+
+  if (!booking.user.equals(req.user._id)) {
+    req.flash("error", "Unauthorized.");
+    return res.redirect("/bookings");
+  }
+
+  // redirect to send cancellation OTP
+  res.redirect(`/bookings/${id}/send-cancel-otp`);
+};
+
+module.exports.renderVerifyCancelPage = async (req, res) => {
+  // this module is used to render OTP verification page before cancellation.
+  let { id } = req.params;
+
+  const booking = await Booking.findById(id);
+
+  if (!booking) {
+    req.flash("error", "Booking not found.");
+    return res.redirect("/bookings");
+  }
+
+  if (!booking.user.equals(req.user._id)) {
+    req.flash("error", "Unauthorized.");
+    return res.redirect("/bookings");
+  }
+
+  res.render("bookings/verifyCancel.ejs", { booking });
 };
 
 module.exports.sendCancelOTP = async (req, res) => {

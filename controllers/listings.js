@@ -14,8 +14,7 @@ module.exports.renderNewForm = (req, res) => {
 };
 
 module.exports.showListing = async (req, res) => {
-  // this module is used to list the particular listing details in breif.
-
+  // this module is used to list the particular listing details in brief.
   let { id } = req.params;
 
   const listing = await Listing.findById(id)
@@ -32,23 +31,12 @@ module.exports.showListing = async (req, res) => {
     return res.redirect("/listings");
   }
 
-  // check if listing is currently booked
-  const today = new Date();
-
+  // check if listing has any active confirmed booking
   const activeBooking = await Booking.findOne({
     listing: listing._id,
     paymentStatus: "confirmed",
-    checkIn: { $lte: today },
-    checkOut: { $gte: today },
+    bookingStatus: "active",
   });
-
-  let daysLeft = null;
-
-  if (activeBooking) {
-    const diff = activeBooking.checkOut - today;
-    daysLeft = Math.ceil(diff / (1000 * 60 * 60 * 24));
-  }
-  // booking availability logic ends here.
 
   // check if current logged-in user already booked this listing
   let userBooking = null;
@@ -66,7 +54,6 @@ module.exports.showListing = async (req, res) => {
   res.render("listings/show.ejs", {
     listing,
     activeBooking,
-    daysLeft,
     userBooking,
   });
 };
