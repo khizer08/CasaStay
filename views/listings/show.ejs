@@ -15,17 +15,25 @@
             </p>
             <p class="card-text price">
                 &#8377; <%= listing.price.toLocaleString("en-IN") %>/night
-                
-                <!--Reserve button-->
-                 <% if (currUser && !listing.owner._id.equals(currUser._id)) { %>
-                    <button 
+
+                <!-- reserve button  -->
+                <% if (currUser && !listing.owner._id.equals(currUser._id)) { %>
+
+                    <% if (activeBooking) { %>
+                        <button class="btn btn-secondary ms-3" disabled>
+                            Currently Booked
+                        </button>
+                    <% } else { %>
+                    <button
                         type="button"
                         class="btn btn-dark ms-3"
-                        onclick="openBookingModal()">
+                        onclick="openBookingModal()"
+                    >
                         Reserve
                     </button>
-                <%} %>
-                    <!-- ends here -->
+                    <% } %>
+
+                <% } %>
             </p>
             <p class="card-text">
                 <%= listing.location %><br>

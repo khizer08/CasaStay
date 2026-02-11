@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    <div style="<%= containerStyle %>">
+      <h2 style="<%= headingStyle %>">Booking Confirmed 🎉</h2>
+
+      <p>Hi <%= username %>,</p>
+
+      <p>Your booking for <b><%= listingTitle %></b> is confirmed.</p>
+
+      <hr />
+
+      <p><b>Check-in:</b> <%= checkIn %></p>
+      <p><b>Check-out:</b> <%= checkOut %></p>
+      <p><b>Nights:</b> <%= nights %></p>
+
+      <h3>Total Paid: ₹<%= totalAmount %></h3>
+
+      <p>Booking ID: <%= bookingId %></p>
+
+      <p>Thank you for choosing CasaStay!</p>
+    </div>
+  </body>
+</html>
