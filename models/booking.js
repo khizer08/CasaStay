@@ -58,6 +58,22 @@ const bookingSchema = new Schema(
       enum: ["active", "cancelled"],
       default: "active",
     },
+
+    paymentOTPHash: {
+      type: String,
+    },
+
+    paymentOTPExpires: {
+      type: Date,
+    },
+
+    cancelOTPHash: {
+      type: String,
+    },
+
+    cancelOTPExpires: {
+      type: Date,
+    },
   },
   { timestamps: true },
 );

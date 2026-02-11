@@ -1,9 +1,16 @@
+const ejs = require("ejs");
+const path = require("path");
+const crypto = require("crypto");
 const Booking = require("../models/booking");
 const Listing = require("../models/listing");
 const sendEmail = require("../utils/sendEmail"); // mail sending logic.
-const bookingConfirmationStyle = require("../views/emails/bookingConfirmationStyle"); // booking email styling file.
-const ejs = require("ejs");
-const path = require("path");
+const bookingConfirmationStyle = require("../views/emails/bookingConfirmationStyle");
+const paymentOTPStyle = require("../views/emails/paymentOTPStyle");
+const cancelOTPStyle = require("../views/emails/cancelOTPStyle");
+const cancellationConfirmationStyle = require("../views/emails/cancellationConfirmationStyle");
+const refundStyle = require("../views/emails/refundStyle");
+const refundProcessedStyle = require("../views/emails/refundProcessedStyle");
+const { generateOTP, hashOTP } = require("../utils/generateOTP");
 
 module.exports.createBooking = async (req, res) => {
   // this module is used to handle the "booking logic".
@@ -91,6 +98,8 @@ module.exports.createBooking = async (req, res) => {
     pricePerNight,
     taxes,
     totalAmount,
+    paymentStatus: "pending",
+    bookingStatus: "pending",
   });
 
   await newBooking.save();
@@ -121,14 +130,11 @@ module.exports.renderPaymentPage = async (req, res) => {
   res.render("bookings/payment.ejs", { booking });
 };
 
-module.exports.confirmPayment = async (req, res) => {
-  // this module is used to handle the confirmation of the payment.
-
+module.exports.sendPaymentOTP = async (req, res) => {
+  // this module is used to send OTP before confirmation of booking.
   let { id } = req.params;
 
-  const booking = await Booking.findById(id)
-    .populate("listing")
-    .populate("user");
+  const booking = await Booking.findById(id).populate("user");
 
   if (!booking) {
     req.flash("error", "Booking not found.");
@@ -137,16 +143,57 @@ module.exports.confirmPayment = async (req, res) => {
 
   if (!booking.user._id.equals(req.user._id)) {
     req.flash("error", "Unauthorized.");
-    return res.redirect("/listings");
+    return res.redirect("/bookings");
   }
 
-  if (booking.paymentStatus === "confirmed") {
-    req.flash("success", "Booking already confirmed.");
-    return res.redirect(`/bookings/${id}/confirmation`);
+  const otp = generateOTP();
+  const otpHash = hashOTP(otp);
+
+  booking.paymentOTPHash = otpHash;
+  booking.paymentOTPExpires = Date.now() + 2 * 60 * 1000;
+
+  await booking.save();
+
+  const otpHTML = await ejs.renderFile(
+    path.join(__dirname, "../views/emails/paymentOTP.ejs"),
+    {
+      username: booking.user.username,
+      otp,
+      ...paymentOTPStyle,
+    },
+  );
+
+  await sendEmail({
+    to: booking.user.email,
+    subject: "Verify Payment OTP",
+    html: otpHTML,
+  });
+
+  res.redirect(`/bookings/${id}/verify-payment`);
+};
+
+module.exports.verifyPaymentOTP = async (req, res) => {
+  // this module is used to verify the OTP being sent is correct or not.
+  let { id } = req.params;
+  const { otp } = req.body;
+
+  const otpHash = crypto.createHash("sha256").update(otp).digest("hex");
+
+  const booking = await Booking.findOne({
+    _id: id,
+    paymentOTPHash: otpHash,
+    paymentOTPExpires: { $gt: Date.now() },
+  }).populate("listing user");
+
+  if (!booking) {
+    req.flash("error", "Invalid or expired OTP.");
+    return res.redirect(`/bookings/${id}/verify-payment`);
   }
 
   booking.paymentStatus = "confirmed";
   booking.bookingStatus = "active";
+  booking.paymentOTPHash = undefined;
+  booking.paymentOTPExpires = undefined;
 
   await booking.save();
 
@@ -172,12 +219,12 @@ module.exports.confirmPayment = async (req, res) => {
     html: bookingHTML,
   });
 
-  req.flash("success", "Payment successful! Booking confirmed.");
-  res.redirect(`/bookings/${booking._id}/confirmation`);
+  req.flash("success", "Payment confirmed successfully.");
+  res.redirect(`/bookings/${id}/confirmation`);
 };
 
 module.exports.renderConfirmationPage = async (req, res) => {
-  // this module is used to display page after successfull payment
+  // this module is used to display page after successfull payment.
   let { id } = req.params;
 
   const booking = await Booking.findById(id).populate("listing");
@@ -195,8 +242,8 @@ module.exports.renderMyBookings = async (req, res) => {
 
   const bookings = await Booking.find({
     user: req.user._id,
-    bookingStatus: "active", // ONLY active
-    paymentStatus: "confirmed", // ONLY confirmed
+    bookingStatus: "active",
+    paymentStatus: "confirmed",
   })
     .populate("listing")
     .sort({ createdAt: -1 });
@@ -204,33 +251,109 @@ module.exports.renderMyBookings = async (req, res) => {
   res.render("bookings/myBookings.ejs", { bookings });
 };
 
-module.exports.cancelBooking = async (req, res) => {
-  // this module is used to cancel a booking.
-
+module.exports.sendCancelOTP = async (req, res) => {
+  // this module is used to send OTP before confirmation of cancellation of booking.
   let { id } = req.params;
 
-  const booking = await Booking.findById(id);
+  const booking = await Booking.findById(id).populate("user");
 
   if (!booking) {
     req.flash("error", "Booking not found.");
     return res.redirect("/bookings");
   }
 
-  // Only booking owner can cancel
-  if (!booking.user.equals(req.user._id)) {
-    req.flash("error", "Unauthorized action.");
+  if (!booking.user._id.equals(req.user._id)) {
+    req.flash("error", "Unauthorized.");
     return res.redirect("/bookings");
   }
 
-  if (booking.bookingStatus === "cancelled") {
-    req.flash("success", "Booking already cancelled.");
+  const otp = generateOTP();
+  const otpHash = hashOTP(otp);
+
+  booking.cancelOTPHash = otpHash;
+  booking.cancelOTPExpires = Date.now() + 5 * 60 * 1000;
+
+  await booking.save();
+
+  const cancelHTML = await ejs.renderFile(
+    path.join(__dirname, "../views/emails/cancelOTP.ejs"),
+    {
+      username: booking.user.username,
+      otp,
+      ...cancelOTPStyle,
+    },
+  );
+
+  await sendEmail({
+    to: booking.user.email,
+    subject: "Confirm Booking Cancellation",
+    html: cancelHTML,
+  });
+
+  res.redirect(`/bookings/${id}/verify-cancel`);
+};
+
+module.exports.verifyCancelOTP = async (req, res) => {
+  let { id } = req.params;
+  const { otp } = req.body;
+
+  const otpHash = crypto.createHash("sha256").update(otp).digest("hex");
+
+  const booking = await Booking.findOne({
+    _id: id,
+    cancelOTPHash: otpHash,
+    cancelOTPExpires: { $gt: Date.now() },
+  }).populate("user listing");
+
+  if (!booking) {
+    req.flash("error", "Invalid or expired OTP.");
     return res.redirect("/bookings");
   }
 
   booking.bookingStatus = "cancelled";
   booking.paymentStatus = "cancelled";
+  booking.cancelOTPHash = undefined;
+  booking.cancelOTPExpires = undefined;
 
   await booking.save();
+
+  // Send cancellation confirmation mail
+  const cancelConfirmHTML = await ejs.renderFile(
+    path.join(__dirname, "../views/emails/cancellationConfirmation.ejs"),
+    {
+      username: booking.user.username,
+      listingTitle: booking.listing.title,
+      checkIn: booking.checkIn.toDateString(),
+      checkOut: booking.checkOut.toDateString(),
+      totalAmount: booking.totalAmount,
+      ...cancellationConfirmationStyle,
+    },
+  );
+
+  await sendEmail({
+    to: booking.user.email,
+    subject: "Your Booking Has Been Cancelled",
+    html: cancelConfirmHTML,
+  });
+
+  // refund processed email
+  const refundHTML = await ejs.renderFile(
+    path.join(__dirname, "../views/emails/refundProcessed.ejs"),
+    {
+      username: booking.user.username,
+      listingTitle: booking.listing.title,
+      totalAmount: booking.totalAmount,
+      ...refundProcessedStyle,
+    },
+  );
+
+  setTimeout(async () => {
+    await sendEmail({
+      to: booking.user.email,
+      subject: "Your Refund Has Been Processed",
+      html: refundHTML,
+    });
+  }, 10000);
 
   req.flash("success", "Booking cancelled successfully.");
   res.redirect("/bookings");

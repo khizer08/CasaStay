@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<body>
+  <div style="<%= containerStyle %>">
+    <h2 style="<%= headingStyle %>">Booking Cancelled ❌</h2>
+
+    <p>Hi <b><%= username %></b>,</p>
+
+    <p>Your booking for <b><%= listingTitle %></b> has been successfully cancelled.</p>
+
+    <p><b>Check-in:</b> <%= checkIn %></p>
+    <p><b>Check-out:</b> <%= checkOut %></p>
+    <p><b>Total Paid:</b> ₹<%= totalAmount %></p>
+
+    <p>Your refund will be processed within <b>24–48 hours</b>.</p>
+
+    <p style="<%= footerStyle %>">
+      — CasaStay Team
+    </p>
+  </div>
+</body>
+</html>
