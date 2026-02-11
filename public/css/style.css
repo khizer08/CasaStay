@@ -350,3 +350,33 @@ body{
     margin-top: 0.75rem;
   }
 } 
+
+/* Booking modal  */
+.booking-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    backdrop-filter: blur(6px);
+    background: rgba(0,0,0,0.4);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.booking-content {
+    background: white;
+    padding: 25px;
+    width: 350px;
+    border-radius: 10px;
+    position: relative;
+}
+
+.close-btn {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    border: none;
+    background: none;
+    font-size: 20px;
+}
+/* ends here */

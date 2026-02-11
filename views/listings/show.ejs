@@ -14,7 +14,18 @@
                 <%= listing.description %><br>
             </p>
             <p class="card-text price">
-                &#8377; <%= listing.price.toLocaleString("en-IN") %>/night<br>
+                &#8377; <%= listing.price.toLocaleString("en-IN") %>/night
+                
+                <!--Reserve button-->
+                 <% if (currUser && !listing.owner._id.equals(currUser._id)) { %>
+                    <button 
+                        type="button"
+                        class="btn btn-dark ms-3"
+                        onclick="openBookingModal()">
+                        Reserve
+                    </button>
+                <%} %>
+                    <!-- ends here -->
             </p>
             <p class="card-text">
                 <%= listing.location %><br>
@@ -52,32 +63,6 @@
         <div class="col-12 col-sm-12 col-md-10 col-lg-8 ">
             <hr>
         </div>
-
-        <!--Booking part-->
-        <% if (currUser && !listing.owner._id.equals(currUser._id)) { %>
-            <div class="col-12 col-lg-6 col-md-8 col-sm-8 offset-lg-3 offset-md-2 mt-4">
-                <h4>Book this place</h4>
-
-                <form action="/listings/<%= listing._id %>/book" method="POST">
-                    <div class="row">
-                        <div class="col-6 mb-2">
-                            <label class="form-label">Check-in</label>
-                            <input type="date" name="checkIn" class="form-control" min="<%= new Date().toISOString().split('T')[0] %>" required> <!--Prevent selecting past dates-->
-                        </div>
-
-                        <div class="col-6 mb-2">
-                            <label class="form-label">Check-out</label>
-                            <input type="date" name="checkOut" class="form-control" required>
-                        </div>
-                    </div>
-
-                    <button class="btn btn-dark mt-2">
-                        Reserve
-                    </button>
-                </form>
-            </div>
-        <% } %>
-        <!--ends here-->
 
 
         <% if (currUser) { %>
@@ -151,4 +136,39 @@
 
 
     </div>
+
+    <!-- reservation popup -->
+    <div id="bookingModal" class="booking-modal">
+        <div class="booking-content">
+            <h5>Book this place</h5>
+
+            <form action="/listings/<%= listing._id %>/book" method="POST">
+                <div class="mb-2">
+                    <label>Check-in</label>
+                    <input type="date" name="checkIn" id="checkIn" class="form-control" required>
+                </div>
+
+                <div class="mb-2">
+                    <label>Check-out</label>
+                    <input type="date" name="checkOut" id="checkOut" class="form-control" required>
+                </div>
+
+                <hr>
+
+                <div id="priceDetails">
+                    <p>Nights: <span id="nights">0</span></p>
+                    <p>Subtotal: ₹<span id="subtotal">0</span></p>
+                    <p>GST (18%): ₹<span id="gst">0</span></p>
+                    <h6>Total: ₹<span id="total">0</span></h6>
+                </div>
+
+                <button class="btn btn-dark w-100 mt-2">
+                    Pay
+                </button>
+            </form>
+
+            <button class="close-btn" onclick="closeBookingModal()">×</button>
+        </div>
+    </div>
+    <!-- ends here -->
 </div>
