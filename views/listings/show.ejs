@@ -19,22 +19,33 @@
                 <!-- reserve button  -->
                 <% if (currUser && !listing.owner._id.equals(currUser._id)) { %>
 
-                    <% if (activeBooking) { %>
+                    <% if (userBooking) { %>
+
                         <button class="btn btn-secondary ms-3" disabled>
-                            Currently Booked
+                            Already Booked
                         </button>
-                    <% } else { %>
-                    <button
-                        type="button"
-                        class="btn btn-dark ms-3"
-                        onclick="openBookingModal()"
-                    >
-                        Reserve
-                    </button>
-                    <% } %>
+
+                    <% } else if (activeBooking) { %>
+
+                            <button class="btn btn-secondary ms-3" disabled>
+                                Currently Booked
+                            </button>
+
+                        <% } else { %>
+
+                                <button
+                                    type="button"
+                                    class="btn btn-dark ms-3"
+                                    onclick="openBookingModal()"
+                                >
+                                    Reserve
+                                </button>
+
+                            <% } %>
 
                 <% } %>
             </p>
+            
             <p class="card-text">
                 <%= listing.location %><br>
             </p>

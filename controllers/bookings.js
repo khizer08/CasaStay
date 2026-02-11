@@ -30,6 +30,37 @@ module.exports.createBooking = async (req, res) => {
     return res.redirect("/listings");
   }
 
+  // prevent same user double booking.
+  const userExistingBooking = await Booking.findOne({
+    listing: listing._id,
+    user: req.user._id,
+    paymentStatus: "confirmed",
+    bookingStatus: "active",
+  });
+
+  if (userExistingBooking) {
+    req.flash("error", "You have already booked this listing.");
+    return res.redirect(`/listings/${id}`);
+  }
+  // ends here same user double booking.
+
+  // prevent date overlapping with other users.
+  const overlappingBooking = await Booking.findOne({
+    listing: listing._id,
+    paymentStatus: "confirmed",
+    checkIn: { $lt: endDate },
+    checkOut: { $gt: startDate },
+  });
+
+  if (overlappingBooking) {
+    req.flash(
+      "error",
+      "This listing is already booked for the selected dates.",
+    );
+    return res.redirect(`/listings/${id}`);
+  }
+  // ends here date overlapping with other users.
+
   // calculate nights
   const diffTime = endDate - startDate;
   const nights = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -82,7 +113,7 @@ module.exports.renderPaymentPage = async (req, res) => {
 
 module.exports.confirmPayment = async (req, res) => {
   // this module is used to handle the confirmation of the payment.
-  
+
   let { id } = req.params;
 
   const booking = await Booking.findById(id)
@@ -121,7 +152,7 @@ module.exports.confirmPayment = async (req, res) => {
       totalAmount: booking.totalAmount,
       bookingId: booking._id,
       ...bookingConfirmationStyle,
-    }
+    },
   );
 
   // Send booking confirmation email
@@ -148,7 +179,6 @@ module.exports.renderConfirmationPage = async (req, res) => {
 
   res.render("bookings/confirmation.ejs", { booking });
 };
-
 
 module.exports.renderMyBookings = async (req, res) => {
   // this module is used to display all bookings of logged-in user.

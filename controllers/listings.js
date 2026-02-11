@@ -50,10 +50,24 @@ module.exports.showListing = async (req, res) => {
   }
   // booking availability logic ends here.
 
+  // check if current logged-in user already booked this listing
+  let userBooking = null;
+
+  if (req.user) {
+    userBooking = await Booking.findOne({
+      listing: listing._id,
+      user: req.user._id,
+      paymentStatus: "confirmed",
+      bookingStatus: "active",
+    });
+  }
+  // current logged-in user already booked logic ends here
+
   res.render("listings/show.ejs", {
     listing,
     activeBooking,
     daysLeft,
+    userBooking,
   });
 };
 
