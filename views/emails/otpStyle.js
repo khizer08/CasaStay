@@ -15,9 +15,9 @@ module.exports = {
     letter-spacing: 6px;
     margin: 20px 0;
   `,
-  footer: `
+  footerStyle: `
+    margin-top: 20px;
     font-size: 12px;
-    color: #777;
-    text-align: center;
+    color: gray;
   `,
 };

@@ -7,4 +7,9 @@ module.exports = {
   headingStyle: `
     color: #000000;
   `,
+  footerStyle: `
+    margin-top: 20px;
+    font-size: 12px;
+    color: gray;
+  `,
 };

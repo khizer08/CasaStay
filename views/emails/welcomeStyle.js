@@ -16,8 +16,9 @@ module.exports = {
     margin: 20px auto;
     border-radius: 12px;
   `,
-  footer: `
+  footerStyle: `
+    margin-top: 20px;
     font-size: 12px;
-    color: #777;
+    color: gray;
   `,
 };
