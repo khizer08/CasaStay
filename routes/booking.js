@@ -45,4 +45,12 @@ router.get(
   isLoggedIn,
   wrapAsync(bookingController.renderConfirmationPage),
 );
+
+
+router.delete(
+  "/bookings/:id",
+  isLoggedIn,
+  wrapAsync(bookingController.cancelBooking)
+);
+
 module.exports = router;

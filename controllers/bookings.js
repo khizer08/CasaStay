@@ -185,9 +185,43 @@ module.exports.renderMyBookings = async (req, res) => {
 
   const bookings = await Booking.find({
     user: req.user._id,
+    bookingStatus: "active", // ONLY active
+    paymentStatus: "confirmed", // ONLY confirmed
   })
     .populate("listing")
     .sort({ createdAt: -1 });
 
   res.render("bookings/myBookings.ejs", { bookings });
+};
+
+module.exports.cancelBooking = async (req, res) => {
+  // this module is used to cancel a booking.
+
+  let { id } = req.params;
+
+  const booking = await Booking.findById(id);
+
+  if (!booking) {
+    req.flash("error", "Booking not found.");
+    return res.redirect("/bookings");
+  }
+
+  // Only booking owner can cancel
+  if (!booking.user.equals(req.user._id)) {
+    req.flash("error", "Unauthorized action.");
+    return res.redirect("/bookings");
+  }
+
+  if (booking.bookingStatus === "cancelled") {
+    req.flash("success", "Booking already cancelled.");
+    return res.redirect("/bookings");
+  }
+
+  booking.bookingStatus = "cancelled";
+  booking.paymentStatus = "cancelled";
+
+  await booking.save();
+
+  req.flash("success", "Booking cancelled successfully.");
+  res.redirect("/bookings");
 };
