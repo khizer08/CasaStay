@@ -1,43 +1,76 @@
 <% layout('/layouts/boilerplate') -%>
 
-<div class="container mt-5">
-  <h3>My Bookings</h3>
+<div class="container mt-3">
+  <h3 class="mb-4">My Bookings</h3>
 
   <% if (bookings.length === 0) { %>
-    <p>No bookings yet.</p>
+    <p>You have no bookings yet.</p>
   <% } %>
 
-  <% for (let booking of bookings) { %>
-    <div class="card mt-3 p-3">
-      <h5><%= booking.listing.title %></h5>
+  <div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1 g-4">
+    <% for (let booking of bookings) { %>
 
-      <p>
-        <strong>Check-in:</strong>
-        <%= booking.checkIn.toDateString() %>
-      </p>
+      <div class="col">
+        <div class="card listing-card h-100">
 
-      <p>
-        <strong>Check-out:</strong>
-        <%= booking.checkOut.toDateString() %>
-      </p>
+          <img 
+            src="<%= booking.listing.image.url %>" 
+            class="card-img-top" 
+            alt="Listing_Image" 
+            style="height: 18rem; object-fit: cover;"
+          >
 
-      <p>
-        <strong>Total Paid:</strong>
-        ₹<%= booking.totalAmount %>
-      </p>
+          <div class="card-body">
+            <h5 class="card-title">
+              <%= booking.listing.title %>
+            </h5>
 
-      <% if (booking.bookingStatus === "active") { %>
-        <form
-          method="POST"
-          action="/bookings/<%= booking._id %>?_method=DELETE"
-        >
-          <button class="btn btn-danger btn-sm">
-            Cancel Booking
-          </button>
-        </form>
-      <% } else { %>
-        <span class="text-muted">Cancelled</span>
-      <% } %>
-    </div>
-  <% } %>
+            <p class="card-text">
+              <strong>Check-in:</strong><br>
+              <%= booking.checkIn.toDateString() %>
+            </p>
+
+            <p class="card-text">
+              <strong>Check-out:</strong><br>
+              <%= booking.checkOut.toDateString() %>
+            </p>
+
+            <p class="card-text">
+              <strong>Status:</strong>
+              <% if (booking.bookingStatus === "active") { %>
+                <span class="text-success">Active</span>
+              <% } else { %>
+                <span class="text-danger">Cancelled</span>
+              <% } %>
+            </p>
+
+            <p class="card-text">
+              <strong>Total:</strong>
+              ₹<%= booking.totalAmount.toLocaleString("en-IN") %>
+            </p>
+
+            <div class="d-flex justify-content-between mt-3">
+              <a href="/listings/<%= booking.listing._id %>" 
+                 class="btn btn-dark btn-sm">
+                View
+              </a>
+
+              <% if (booking.bookingStatus === "active") { %>
+                <form 
+                  method="POST"
+                  action="/bookings/<%= booking._id %>?_method=DELETE"
+                >
+                  <button class="btn btn-outline-danger btn-sm">
+                    Cancel
+                  </button>
+                </form>
+              <% } %>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    <% } %>
+  </div>
 </div>

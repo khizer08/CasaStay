@@ -148,3 +148,16 @@ module.exports.renderConfirmationPage = async (req, res) => {
 
   res.render("bookings/confirmation.ejs", { booking });
 };
+
+
+module.exports.renderMyBookings = async (req, res) => {
+  // this module is used to display all bookings of logged-in user.
+
+  const bookings = await Booking.find({
+    user: req.user._id,
+  })
+    .populate("listing")
+    .sort({ createdAt: -1 });
+
+  res.render("bookings/myBookings.ejs", { bookings });
+};
