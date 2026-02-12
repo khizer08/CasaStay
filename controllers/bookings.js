@@ -8,7 +8,6 @@ const bookingConfirmationStyle = require("../views/emails/bookingConfirmationSty
 const paymentOTPStyle = require("../views/emails/paymentOTPStyle");
 const cancelOTPStyle = require("../views/emails/cancelOTPStyle");
 const cancellationConfirmationStyle = require("../views/emails/cancellationConfirmationStyle");
-const refundStyle = require("../views/emails/refundStyle");
 const refundProcessedStyle = require("../views/emails/refundProcessedStyle");
 const { generateOTP, hashOTP } = require("../utils/generateOTP");
 
