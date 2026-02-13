@@ -22,6 +22,11 @@ body{
 .nav-link {
   color: #222222 !important;
 }
+.text-logo {
+  font-family: 'Pacifico', cursive !important;
+  color: #fe424d !important;
+  font-size: x-large;
+}
 
 
 /* Search bar */
