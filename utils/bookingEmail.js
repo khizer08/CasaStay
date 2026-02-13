@@ -18,7 +18,7 @@ const sendBookingConfirmationEmail = async (booking) => {
       nights: booking.nights,
       totalAmount: booking.totalAmount,
       bookingId: booking._id,
-      ...bookingStyle,
+      ...bookingConfirmationStyle,
     });
 
     await sendEmail({

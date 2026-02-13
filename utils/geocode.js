@@ -11,7 +11,7 @@ module.exports.getCoordinates = async (location, country) => {
                 limit: 1
             },
             headers: {
-                "User-Agent": "WanderLust-App"
+                "User-Agent": "CasaStay-App"
             }
         }
     );

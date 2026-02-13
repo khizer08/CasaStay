@@ -102,9 +102,9 @@ app.use((req,res,next)=>{
 
 
 app.use("/listings",listingRouter); // using the "listingRouter" route, any route which is found in the "listings" module will default start with "/listings".
-app.use("/listings/:id/reviews",reviewRouter); // // using the "reviewRouter" route, any route which is found in the "reviews" module will default start with "/reviews".
-app.use("/",userRouter); // // using the "users" route, any route which is found in the "users" module will default start with "/".
-app.use("/", bookingRouter);
+app.use("/listings/:id/reviews",reviewRouter); // using the "reviewRouter" route, any route which is found in the "reviews" module will default start with "/reviews".
+app.use("/",userRouter); // using the "users" route, any route which is found in the "users" module will default start with "/".
+app.use("/", bookingRouter); // using the "bookingRouter" route, any route which is found in the "bookings" module will default start with "/".
 
 
 //for any route that doesnt exist.
