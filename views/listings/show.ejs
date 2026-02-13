@@ -16,16 +16,24 @@
             <p class="card-text price">
                 &#8377; <%= listing.price.toLocaleString("en-IN") %>/night
 
-                <!-- reserve button  -->
-                <% if (currUser && !listing.owner._id.equals(currUser._id)) { %>
+                <!-- reserve button -->
+                <% if (!currUser) { %>
 
-                    <% if (userBooking) { %>
+                    <a href="/login" class="text-danger text-decoration-underline ms-3">
+                        Login to Book
+                    </a>
 
-                        <button class="btn btn-secondary ms-3" disabled>
-                            Already Booked
-                        </button>
+                    <% } else if (listing.owner._id.equals(currUser._id)) { %>
 
-                    <% } else if (activeBooking) { %>
+                        <!-- Owner should not see reserve button -->
+
+                        <% } else if (userBooking) { %>
+
+                            <button class="btn btn-secondary ms-3" disabled>
+                                Already Booked
+                            </button>
+
+                        <% } else if (activeBooking) { %>
 
                             <button class="btn btn-secondary ms-3" disabled>
                                 Currently Booked
@@ -33,17 +41,15 @@
 
                         <% } else { %>
 
-                                <button
-                                    type="button"
-                                    class="btn btn-dark ms-3"
-                                    onclick="openBookingModal()"
-                                >
-                                    Reserve
-                                </button>
+                            <button
+                                type="button"
+                                class="btn btn-dark ms-3"
+                                onclick="openBookingModal()"
+                            >
+                                Reserve
+                            </button>
 
-                            <% } %>
-
-                <% } %>
+                        <% } %>
             </p>
             
             <p class="card-text">
