@@ -167,7 +167,7 @@
         <div class="booking-content">
             <h5>Book this place</h5>
 
-            <form action="/listings/<%= listing._id %>/book" method="POST">
+            <form action="/bookings/listings/<%= listing._id %>/book" method="POST">
                 <div class="mb-2">
                     <label>Check-in</label>
                     <input type="date" name="checkIn" id="checkIn" class="form-control" required>

@@ -1,6 +1,5 @@
 const ejs = require("ejs");
 const path = require("path");
-const crypto = require("crypto");
 const Booking = require("../models/booking");
 const Listing = require("../models/listing");
 const sendEmail = require("../utils/sendEmail"); // mail sending logic.
@@ -9,7 +8,8 @@ const paymentOTPStyle = require("../views/emails/paymentOTPStyle");
 const cancelOTPStyle = require("../views/emails/cancelOTPStyle");
 const cancellationConfirmationStyle = require("../views/emails/cancellationConfirmationStyle");
 const refundProcessedStyle = require("../views/emails/refundProcessedStyle");
-const { generateOTP, hashOTP } = require("../utils/generateOTP");
+const { hashOTP } = require("../utils/generateOTP");
+const { sendOTP } = require("../utils/sendOTP");
 
 module.exports.createBooking = async (req, res) => {
   // this module is used to handle the "booking logic".
@@ -24,15 +24,13 @@ module.exports.createBooking = async (req, res) => {
   const startDate = new Date(checkIn);
   const endDate = new Date(checkOut);
 
-  // prevent booking past dates
   const today = new Date();
-  today.setHours(0, 0, 0, 0); // normalize
+  today.setHours(0, 0, 0, 0);
 
   if (startDate < today) {
     req.flash("error", "You cannot book past dates.");
     return res.redirect(`/listings/${id}`);
   }
-  // past date validation ends here.
 
   if (startDate >= endDate) {
     req.flash("error", "Check-out must be after check-in.");
@@ -46,7 +44,6 @@ module.exports.createBooking = async (req, res) => {
     return res.redirect("/listings");
   }
 
-  // prevent same user double booking.
   const userExistingBooking = await Booking.findOne({
     listing: listing._id,
     user: req.user._id,
@@ -58,9 +55,7 @@ module.exports.createBooking = async (req, res) => {
     req.flash("error", "You have already booked this listing.");
     return res.redirect(`/listings/${id}`);
   }
-  // ends here same user double booking.
 
-  // prevent date overlapping with other users.
   const overlappingBooking = await Booking.findOne({
     listing: listing._id,
     paymentStatus: "confirmed",
@@ -75,16 +70,12 @@ module.exports.createBooking = async (req, res) => {
     );
     return res.redirect(`/listings/${id}`);
   }
-  // ends here date overlapping with other users.
 
-  // calculate nights
   const diffTime = endDate - startDate;
   const nights = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
   const pricePerNight = listing.price;
   const subtotal = nights * pricePerNight;
-
-  // simple tax logic (18%)
   const taxes = Math.round(subtotal * 0.18);
   const totalAmount = subtotal + taxes;
 
@@ -103,7 +94,6 @@ module.exports.createBooking = async (req, res) => {
 
   await newBooking.save();
 
-  // redirect to dummy payment page
   res.redirect(`/bookings/${newBooking._id}/payment`);
 };
 
@@ -120,7 +110,6 @@ module.exports.renderPaymentPage = async (req, res) => {
     return res.redirect("/listings");
   }
 
-  // Only booking owner can access
   if (!booking.user._id.equals(req.user._id)) {
     req.flash("error", "Unauthorized access.");
     return res.redirect("/listings");
@@ -145,27 +134,23 @@ module.exports.sendPaymentOTP = async (req, res) => {
     return res.redirect("/bookings");
   }
 
-  const otp = generateOTP();
-  const otpHash = hashOTP(otp);
+  if (booking.paymentOTPExpires && Date.now() < booking.paymentOTPExpires) {
+    req.flash("error", "Please wait before requesting a new OTP.");
+    return res.redirect(`/bookings/${id}/verify-payment`);
+  }
 
-  booking.paymentOTPHash = otpHash;
-  booking.paymentOTPExpires = Date.now() + 2 * 60 * 1000;
-
-  await booking.save();
-
-  const otpHTML = await ejs.renderFile(
-    path.join(__dirname, "../views/emails/paymentOTP.ejs"),
-    {
+  await sendOTP({
+    target: booking,
+    hashField: "paymentOTPHash",
+    expiryField: "paymentOTPExpires",
+    subject: "Verify Payment OTP",
+    template: "paymentOTP.ejs",
+    templateData: (otp) => ({
       username: booking.user.username,
       otp,
       ...paymentOTPStyle,
-    },
-  );
-
-  await sendEmail({
-    to: booking.user.email,
-    subject: "Verify Payment OTP",
-    html: otpHTML,
+    }),
+    recipientEmail: booking.user.email,
   });
 
   res.redirect(`/bookings/${id}/verify-payment`);
@@ -187,7 +172,12 @@ module.exports.renderVerifyPaymentPage = async (req, res) => {
     return res.redirect("/listings");
   }
 
-  res.render("bookings/verifyPayment.ejs", { booking });
+  res.render("bookings/verifyPayment.ejs", {
+    booking,
+    otpExpiry: booking.paymentOTPExpires
+      ? booking.paymentOTPExpires.getTime()
+      : 0,
+  });
 };
 
 module.exports.verifyPaymentOTP = async (req, res) => {
@@ -196,7 +186,7 @@ module.exports.verifyPaymentOTP = async (req, res) => {
   let { id } = req.params;
   const { otp } = req.body;
 
-  const otpHash = crypto.createHash("sha256").update(otp).digest("hex");
+  const otpHash = hashOTP(otp);
 
   const booking = await Booking.findOne({
     _id: id,
@@ -216,7 +206,6 @@ module.exports.verifyPaymentOTP = async (req, res) => {
 
   await booking.save();
 
-  // Render booking confirmation email
   const bookingHTML = await ejs.renderFile(
     path.join(__dirname, "../views/emails/bookingConfirmation.ejs"),
     {
@@ -231,7 +220,6 @@ module.exports.verifyPaymentOTP = async (req, res) => {
     },
   );
 
-  // Send booking confirmation email
   await sendEmail({
     to: booking.user.email,
     subject: "Your Booking is Confirmed 🎉",
@@ -252,7 +240,6 @@ module.exports.renderConfirmationPage = async (req, res) => {
     return res.redirect("/listings");
   }
 
-  // ownership protection (IMPORTANT)
   if (!booking.user.equals(req.user._id)) {
     req.flash("error", "Unauthorized access.");
     return res.redirect("/listings");
@@ -291,7 +278,6 @@ module.exports.cancelBooking = async (req, res) => {
     return res.redirect("/bookings");
   }
 
-  // redirect to send cancellation OTP
   res.redirect(`/bookings/${id}/send-cancel-otp`);
 };
 
@@ -311,7 +297,12 @@ module.exports.renderVerifyCancelPage = async (req, res) => {
     return res.redirect("/bookings");
   }
 
-  res.render("bookings/verifyCancel.ejs", { booking });
+  res.render("bookings/verifyCancel.ejs", {
+    booking,
+    otpExpiry: booking.cancelOTPExpires
+      ? booking.cancelOTPExpires.getTime()
+      : 0,
+  });
 };
 
 module.exports.sendCancelOTP = async (req, res) => {
@@ -330,27 +321,23 @@ module.exports.sendCancelOTP = async (req, res) => {
     return res.redirect("/bookings");
   }
 
-  const otp = generateOTP();
-  const otpHash = hashOTP(otp);
+  if (booking.cancelOTPExpires && Date.now() < booking.cancelOTPExpires) {
+    req.flash("error", "Please wait before requesting a new OTP.");
+    return res.redirect(`/bookings/${id}/verify-cancel`);
+  }
 
-  booking.cancelOTPHash = otpHash;
-  booking.cancelOTPExpires = Date.now() + 5 * 60 * 1000;
-
-  await booking.save();
-
-  const cancelHTML = await ejs.renderFile(
-    path.join(__dirname, "../views/emails/cancelOTP.ejs"),
-    {
+  await sendOTP({
+    target: booking,
+    hashField: "cancelOTPHash",
+    expiryField: "cancelOTPExpires",
+    subject: "Confirm Booking Cancellation",
+    template: "cancelOTP.ejs",
+    templateData: (otp) => ({
       username: booking.user.username,
       otp,
       ...cancelOTPStyle,
-    },
-  );
-
-  await sendEmail({
-    to: booking.user.email,
-    subject: "Confirm Booking Cancellation",
-    html: cancelHTML,
+    }),
+    recipientEmail: booking.user.email,
   });
 
   res.redirect(`/bookings/${id}/verify-cancel`);
@@ -360,7 +347,7 @@ module.exports.verifyCancelOTP = async (req, res) => {
   let { id } = req.params;
   const { otp } = req.body;
 
-  const otpHash = crypto.createHash("sha256").update(otp).digest("hex");
+  const otpHash = hashOTP(otp);
 
   const booking = await Booking.findOne({
     _id: id,
@@ -380,7 +367,6 @@ module.exports.verifyCancelOTP = async (req, res) => {
 
   await booking.save();
 
-  // Send cancellation confirmation mail
   const cancelConfirmHTML = await ejs.renderFile(
     path.join(__dirname, "../views/emails/cancellationConfirmation.ejs"),
     {
@@ -399,7 +385,6 @@ module.exports.verifyCancelOTP = async (req, res) => {
     html: cancelConfirmHTML,
   });
 
-  // refund processed email
   const refundHTML = await ejs.renderFile(
     path.join(__dirname, "../views/emails/refundProcessed.ejs"),
     {

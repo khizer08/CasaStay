@@ -4,8 +4,8 @@ const welcomeStyle = require("../views/emails/welcomeStyle"); // welcome email s
 const otpStyle = require("../views/emails/otpStyle"); // otp email styling file.
 const ejs = require("ejs");
 const path = require("path");
-const crypto = require("crypto");
-const { generateOTP, hashOTP } = require("../utils/generateOTP"); //OTP utilities
+const { hashOTP } = require("../utils/generateOTP");
+const { sendOTP } = require("../utils/sendOTP");
 
 module.exports.renderSignupForm = (req, res) => {
   // this module is used to render a form so that a user can make their account.
@@ -17,7 +17,6 @@ module.exports.signup = async (req, res, next) => {
   try {
     let { username, email, password } = req.body;
 
-    // CHECK IF EMAIL ALREADY EXISTS
     const existingEmail = await User.findOne({ email });
 
     if (existingEmail) {
@@ -27,43 +26,28 @@ module.exports.signup = async (req, res, next) => {
       );
       return res.redirect("/login");
     }
-    // check logic ends here.
 
-    // create user
     const newUser = new User({ email, username });
     const registeredUser = await User.register(newUser, password);
     console.log(registeredUser);
 
-    // Generate OTP logic.
-    const otp = generateOTP();
-    const otpHash = hashOTP(otp);
-
-    registeredUser.emailOTPHash = otpHash;
-    registeredUser.emailOTPExpires = Date.now() + 1 * 60 * 1000; // 1 min
     registeredUser.emailOTPAttempts = 0;
     registeredUser.isEmailVerified = false;
 
-    await registeredUser.save();
-    // otp generation logic ends here.
-
-    //  Render OTP email
-    const otpEmailHTML = await ejs.renderFile(
-      path.join(__dirname, "../views/emails/otp.ejs"),
-      {
+    await sendOTP({
+      target: registeredUser,
+      hashField: "emailOTPHash",
+      expiryField: "emailOTPExpires",
+      subject: "Verify your email — CasaStay 🔐",
+      template: "otp.ejs",
+      templateData: (otp) => ({
         username: registeredUser.username,
         otp,
         otpStyle,
-      },
-    );
-
-    //  Send OTP email
-    await sendEmail({
-      to: registeredUser.email,
-      subject: "Verify your email — CasaStay 🔐",
-      html: otpEmailHTML,
+      }),
+      recipientEmail: registeredUser.email,
     });
 
-    //  DO NOT auto-login yet
     req.flash(
       "success",
       "Account created! Please verify your email using the OTP sent to your email.",
@@ -78,9 +62,20 @@ module.exports.signup = async (req, res, next) => {
   }
 };
 
-module.exports.renderVerifyEmailForm = (req, res) => {
+module.exports.renderVerifyEmailForm = async (req, res) => {
   // this module is used to render a form so that a user can enter the OTP for verification.
-  res.render("users/verifyEmail.ejs");
+  const user = await User.findOne({
+    isEmailVerified: false,
+  }).sort({ createdAt: -1 });
+
+  if (!user) {
+    req.flash("error", "No pending verification found.");
+    return res.redirect("/signup");
+  }
+
+  res.render("users/verifyEmail.ejs", {
+    otpExpiry: user.emailOTPExpires ? user.emailOTPExpires.getTime() : 0,
+  });
 };
 
 // verifying email
@@ -93,10 +88,8 @@ module.exports.verifyEmail = async (req, res, next) => {
       return res.redirect("/verify-email");
     }
 
-    // Hash incoming OTP
-    const otpHash = crypto.createHash("sha256").update(otp).digest("hex");
+    const otpHash = hashOTP(otp);
 
-    // Find valid user
     const user = await User.findOne({
       emailOTPHash: otpHash,
       emailOTPExpires: { $gt: Date.now() },
@@ -107,7 +100,6 @@ module.exports.verifyEmail = async (req, res, next) => {
       return res.redirect("/verify-email");
     }
 
-    // Mark email verified
     user.isEmailVerified = true;
     user.emailOTPHash = undefined;
     user.emailOTPExpires = undefined;
@@ -115,7 +107,6 @@ module.exports.verifyEmail = async (req, res, next) => {
 
     await user.save();
 
-    //Send Welcome Email AFTER otp verification
     const welcomeHTML = await ejs.renderFile(
       path.join(__dirname, "../views/emails/welcome.ejs"),
       {
@@ -130,7 +121,6 @@ module.exports.verifyEmail = async (req, res, next) => {
       html: welcomeHTML,
     });
 
-    // Login AFTER verification
     req.login(user, (err) => {
       if (err) {
         return next(err);
@@ -149,7 +139,6 @@ module.exports.verifyEmail = async (req, res, next) => {
 // resend otp logic.
 module.exports.resendOTP = async (req, res) => {
   try {
-    // Find the latest unverified user
     const user = await User.findOne({
       isEmailVerified: false,
     }).sort({ createdAt: -1 });
@@ -162,36 +151,23 @@ module.exports.resendOTP = async (req, res) => {
       return res.redirect("/signup");
     }
 
-    // Enforce resend cooldown (1 min)
-    if (user.lastOTPSentAt && Date.now() - user.lastOTPSentAt < 60 * 1000) {
-      req.flash("error", "Please wait 1 minute before resending OTP.");
+    if (user.emailOTPExpires && Date.now() < user.emailOTPExpires) {
+      req.flash("error", "Please wait before requesting a new OTP.");
       return res.redirect("/verify-email");
     }
 
-    // Generate NEW OTP
-    const otp = generateOTP();
-    const otpHash = hashOTP(otp);
-
-    user.emailOTPHash = otpHash;
-    user.emailOTPExpires = Date.now() + 1 * 60 * 1000; // 1 mins validity
-    user.emailOTPAttempts = 0;
-
-    await user.save();
-
-    // Send OTP email
-    const otpEmailHTML = await ejs.renderFile(
-      path.join(__dirname, "../views/emails/otp.ejs"),
-      {
+    await sendOTP({
+      target: user,
+      hashField: "emailOTPHash",
+      expiryField: "emailOTPExpires",
+      subject: "Your new OTP — CasaStay 🔐",
+      template: "otp.ejs",
+      templateData: (otp) => ({
         username: user.username,
         otp,
-        otpStyle: require("../views/emails/otpStyle"),
-      },
-    );
-
-    await sendEmail({
-      to: user.email,
-      subject: "Your new OTP — CasaStay 🔐",
-      html: otpEmailHTML,
+        otpStyle,
+      }),
+      recipientEmail: user.email,
     });
 
     req.flash("success", "A new OTP has been sent to your email.");
@@ -211,36 +187,23 @@ module.exports.renderLoginForm = (req, res) => {
 module.exports.login = async (req, res) => {
   // this module decides after login what actions to be taken.
 
-  const user = req.user; // Passport sets this
+  const user = req.user;
 
-  //  BLOCK login if email not verified
   if (!user.isEmailVerified) {
-    // Generate fresh OTP
-    const otp = generateOTP();
-    const otpHash = hashOTP(otp);
-
-    user.emailOTPHash = otpHash;
-    user.emailOTPExpires = Date.now() + 1 * 60 * 1000; // 1 min
-    user.emailOTPAttempts = 0;
-    await user.save();
-
-    // Send OTP email
-    const otpEmailHTML = await ejs.renderFile(
-      path.join(__dirname, "../views/emails/otp.ejs"),
-      {
+    await sendOTP({
+      target: user,
+      hashField: "emailOTPHash",
+      expiryField: "emailOTPExpires",
+      subject: "Verify your email — CasaStay 🔐",
+      template: "otp.ejs",
+      templateData: (otp) => ({
         username: user.username,
         otp,
-        otpStyle: require("../views/emails/otpStyle"),
-      },
-    );
-
-    await sendEmail({
-      to: user.email,
-      subject: "Verify your email — CasaStay 🔐",
-      html: otpEmailHTML,
+        otpStyle,
+      }),
+      recipientEmail: user.email,
     });
 
-    // Kill session immediately
     req.logout(() => {});
 
     req.flash(
@@ -251,10 +214,9 @@ module.exports.login = async (req, res) => {
     return res.redirect("/verify-email");
   }
 
-  // verified user - normal login
   req.flash("success", "Welcome back to CasaStay");
   const redirectUrl = res.locals.redirectUrl || "/listings";
-  // FORCE session save before redirect
+
   req.session.save(() => {
     res.redirect(redirectUrl);
   });
@@ -263,7 +225,6 @@ module.exports.login = async (req, res) => {
 module.exports.logout = (req, res, next) => {
   //this module is used to logout the particular user.
   req.logout((err) => {
-    //"req.logout" method is used to logged out the user in the session.
     if (err) {
       return next(err);
     }
@@ -277,55 +238,107 @@ module.exports.renderForgotPasswordForm = (req, res) => {
   res.render("users/forgotPassword.ejs");
 };
 
-module.exports.sendResetOTP = async (req, res) => {
-  // after we click forgot_password to get otp to the registerd email
-  const { email } = req.body;
-
-  const user = await User.findOne({ email });
-
-  if (!user) {
-    req.flash("error", "No account found with this email.");
+module.exports.renderResetPasswordForm = async (req, res) => {
+  // this module is used to display "reset password form".
+  if (!req.session.resetEmail) {
+    req.flash("error", "Session expired. Please try again.");
     return res.redirect("/forgot-password");
   }
 
-  const otp = generateOTP();
-  const otpHash = hashOTP(otp);
-
-  user.resetOTPHash = otpHash;
-  user.resetOTPExpires = Date.now() + 1 * 60 * 1000;
-  await user.save();
-
-  const otpHTML = await ejs.renderFile(
-    path.join(__dirname, "../views/emails/otp.ejs"),
-    {
-      username: user.username,
-      otp,
-      otpStyle: require("../views/emails/otpStyle"),
-    },
-  );
-
-  await sendEmail({
-    to: user.email,
-    subject: "Reset your password — CasaStay 🔐",
-    html: otpHTML,
+  const user = await User.findOne({
+    email: req.session.resetEmail,
   });
 
-  req.flash("success", "OTP sent to your email.");
-  res.redirect("/reset-password");
+  res.render("users/resetPassword.ejs", {
+    otpExpiry: user.resetOTPExpires ? user.resetOTPExpires.getTime() : 0,
+  });
 };
 
-module.exports.renderResetPasswordForm = (req, res) => {
-  // this module is used to display "reset password form".
-  res.render("users/resetPassword.ejs");
+module.exports.sendResetOTP = async (req, res) => {
+  // after we click forgot_password to get otp to the registerd email
+
+  try {
+    const { email } = req.body;
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      req.flash("error", "No account found with this email.");
+      return res.redirect("/forgot-password");
+    }
+
+    req.session.resetEmail = user.email;
+
+    await sendOTP({
+      target: user,
+      hashField: "resetOTPHash",
+      expiryField: "resetOTPExpires",
+      subject: "Reset your password — CasaStay 🔐",
+      template: "otp.ejs",
+      templateData: (otp) => ({
+        username: user.username,
+        otp,
+        otpStyle,
+      }),
+      recipientEmail: user.email,
+    });
+
+    req.flash("success", "OTP sent to your email.");
+    res.redirect("/reset-password");
+  } catch (err) {
+    req.flash("error", err.message);
+    res.redirect("/forgot-password");
+  }
+};
+
+module.exports.resendResetOTP = async (req, res) => {
+  const email = req.session.resetEmail;
+
+  if (!email) {
+    req.flash("error", "Session expired. Please try again.");
+    return res.redirect("/forgot-password");
+  }
+
+  const user = await User.findOne({ email });
+
+  if (user.resetOTPExpires && Date.now() < user.resetOTPExpires) {
+    req.flash("error", "Please wait before requesting a new OTP.");
+    return res.redirect("/reset-password");
+  }
+
+  await sendOTP({
+    target: user,
+    hashField: "resetOTPHash",
+    expiryField: "resetOTPExpires",
+    subject: "New OTP — CasaStay 🔐",
+    template: "otp.ejs",
+    templateData: (otp) => ({
+      username: user.username,
+      otp,
+      otpStyle,
+    }),
+    recipientEmail: user.email,
+  });
+
+  req.flash("success", "A new OTP has been sent.");
+  res.redirect("/reset-password");
 };
 
 module.exports.resetPassword = async (req, res) => {
   // this module is used for password reset logic
   const { otp, password } = req.body;
 
-  const otpHash = crypto.createHash("sha256").update(otp).digest("hex");
+  const otpHash = hashOTP(otp);
+
+  const email = req.session.resetEmail;
+
+  if (!email) {
+    req.flash("error", "Session expired. Please try again.");
+    return res.redirect("/forgot-password");
+  }
 
   const user = await User.findOne({
+    email,
     resetOTPHash: otpHash,
     resetOTPExpires: { $gt: Date.now() },
   });
@@ -335,13 +348,14 @@ module.exports.resetPassword = async (req, res) => {
     return res.redirect("/reset-password");
   }
 
-  //  Passport-local-mongoose method
   await user.setPassword(password);
 
   user.resetOTPHash = undefined;
   user.resetOTPExpires = undefined;
 
   await user.save();
+
+  delete req.session.resetEmail;
 
   req.flash("success", "Password updated successfully. Please login.");
   req.session.save(() => {

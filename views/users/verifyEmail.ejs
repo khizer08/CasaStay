@@ -30,7 +30,7 @@
     </form>
 
     <p class="text-center mt-3" id="resendMsg">
-      Resend OTP in <span id="timer" data-seconds="60">1:00</span>
+      Resend OTP in <span id="timer"></span>
     </p>
 
     <form action="/resend-otp" method="POST" class="text-center">
@@ -38,7 +38,11 @@
         Resend OTP
       </button>
     </form>
+
+    <script>
+      window.otpExpiry = <%= otpExpiry || 0 %>;
+        console.log("OTP Expiry:", window.otpExpiry);
+    </script>
+    <script src="/js/otpResend.js"></script>
   </div>
 </div>
-
-<script src="/js/otpResend.js"></script>

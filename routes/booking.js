@@ -7,11 +7,10 @@ const bookingController = require("../controllers/bookings");
 
 //to get users booking page.
 router.get(
-  "/bookings",
+  "/",
   isLoggedIn,
-  wrapAsync(bookingController.renderMyBookings)
+  wrapAsync(bookingController.renderMyBookings),
 );
-
 
 // Create Booking
 router.post(
@@ -22,55 +21,42 @@ router.post(
 
 // Render Payment Page
 router.get(
-  "/bookings/:id/payment",
+  "/:id/payment",
   isLoggedIn,
   wrapAsync(bookingController.renderPaymentPage),
 );
 
 //Send Payment OTP (when user clicks confirm)
 router.post(
-  "/bookings/:id/send-payment-otp",
+  "/:id/send-payment-otp",
   isLoggedIn,
   wrapAsync(bookingController.sendPaymentOTP),
 );
 
-//Render OTP verification page
-router.get(
-  "/bookings/:id/verify-payment",
-  isLoggedIn,
-  wrapAsync(bookingController.renderVerifyPaymentPage),
-);
 
-//Verify OTP and confirm payment
-router.post(
-  "/bookings/:id/verify-payment",
-  isLoggedIn,
-  wrapAsync(bookingController.verifyPaymentOTP),
-);
+//Render OTP verification page(get)
+//Verify OTP and confirm payment(post)
+router
+  .route("/:id/verify-payment")
+  .get(isLoggedIn, wrapAsync(bookingController.renderVerifyPaymentPage))
+  .post(isLoggedIn, wrapAsync(bookingController.verifyPaymentOTP));
 
 // Confirmation page
 router.get(
-  "/bookings/:id/confirmation",
+  "/:id/confirmation",
   isLoggedIn,
   wrapAsync(bookingController.renderConfirmationPage),
 );
 
 router.post(
-  "/bookings/:id/send-cancel-otp",
+  "/:id/send-cancel-otp",
   isLoggedIn,
-  wrapAsync(bookingController.sendCancelOTP)
+  wrapAsync(bookingController.sendCancelOTP),
 );
 
-router.get(
-  "/bookings/:id/verify-cancel",
-  isLoggedIn,
-  wrapAsync(bookingController.renderVerifyCancelPage)
-);
-
-router.post(
-  "/bookings/:id/verify-cancel",
-  isLoggedIn,
-  wrapAsync(bookingController.verifyCancelOTP)
-);
+router
+  .route("/:id/verify-cancel")
+  .get(isLoggedIn, wrapAsync(bookingController.renderVerifyCancelPage))
+  .post(isLoggedIn, wrapAsync(bookingController.verifyCancelOTP));
 
 module.exports = router;

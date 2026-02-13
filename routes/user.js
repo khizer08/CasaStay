@@ -48,4 +48,7 @@ router
   .get(userController.renderResetPasswordForm)
   .post(wrapAsync(userController.resetPassword));
 
+// Resend reset OTP
+router.post("/resend-reset-otp", wrapAsync(userController.resendResetOTP));
+
 module.exports = router;
