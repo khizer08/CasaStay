@@ -11,7 +11,7 @@ cloudinary.config({//the name which we are using (cloud_name,api_key,api_secret)
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
-    folder: 'wanderlust_DEV',
+    folder: 'casastay_DEV',
     allowedFormats: ["jpg","png","pdf","jpeg"],
   },
 });

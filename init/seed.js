@@ -5,7 +5,7 @@ if (process.env.NODE_ENV !== "production") {
 const mongoose = require("mongoose");
 const Listing = require("../models/listing.js");
 const User = require("../models/user.js");
-const Booking=require("../models/booking.js")
+const Booking = require("../models/booking.js");
 const initData = require("./data.js");
 const { getCoordinates } = require("../utils/geocode.js");
 
@@ -30,7 +30,7 @@ async function seedDB() {
   // create admin user(this is default user).
   const admin = new User({
     username: "khizer",
-    email: "khizer@wanderlust.com",
+    email: "khizer@CasaStay.com",
     isEmailVerified: true,
   });
 

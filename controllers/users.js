@@ -252,7 +252,7 @@ module.exports.login = async (req, res) => {
   }
 
   // verified user - normal login
-  req.flash("success", "Welcome back to Wanderlust");
+  req.flash("success", "Welcome back to CasaStay");
   const redirectUrl = res.locals.redirectUrl || "/listings";
   // FORCE session save before redirect
   req.session.save(() => {

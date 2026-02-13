@@ -35,7 +35,7 @@ app.use(express.static(path.join(__dirname,"public")));
 
 const dbUrl=process.env.ATLASDB_URL; // connection string from atlas which is stored in .env
 
-// const dbUrl = "mongodb://127.0.0.1:27017/wanderlust";// while working on local machine.
+// const dbUrl = "mongodb://127.0.0.1:27017/casastay";// while working on local machine.
 
 
 main()
