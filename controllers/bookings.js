@@ -3,11 +3,8 @@ const path = require("path");
 const Booking = require("../models/booking");
 const Listing = require("../models/listing");
 const sendEmail = require("../utils/sendEmail"); // mail sending logic.
-const bookingConfirmationStyle = require("../views/emails/bookingConfirmationStyle");
-const paymentOTPStyle = require("../views/emails/paymentOTPStyle");
-const cancelOTPStyle = require("../views/emails/cancelOTPStyle");
-const cancellationConfirmationStyle = require("../views/emails/cancellationConfirmationStyle");
-const refundProcessedStyle = require("../views/emails/refundProcessedStyle");
+const mailStyle = require("../views/emails/message/mailStyle"); // message email styling file.
+const otpStyle = require("../views/emails/otp/otpStyle"); // otp email styling file.
 const { hashOTP } = require("../utils/generateOTP");
 const { sendOTP } = require("../utils/sendOTP");
 
@@ -148,7 +145,7 @@ module.exports.sendPaymentOTP = async (req, res) => {
     templateData: (otp) => ({
       username: booking.user.username,
       otp,
-      ...paymentOTPStyle,
+      otpStyle,
     }),
     recipientEmail: booking.user.email,
   });
@@ -207,7 +204,7 @@ module.exports.verifyPaymentOTP = async (req, res) => {
   await booking.save();
 
   const bookingHTML = await ejs.renderFile(
-    path.join(__dirname, "../views/emails/bookingConfirmation.ejs"),
+    path.join(__dirname, "../views/emails/message/bookingConfirmation.ejs"),
     {
       username: booking.user.username,
       listingTitle: booking.listing.title,
@@ -216,7 +213,7 @@ module.exports.verifyPaymentOTP = async (req, res) => {
       nights: booking.nights,
       totalAmount: booking.totalAmount,
       bookingId: booking._id,
-      ...bookingConfirmationStyle,
+      mailStyle,
     },
   );
 
@@ -335,7 +332,7 @@ module.exports.sendCancelOTP = async (req, res) => {
     templateData: (otp) => ({
       username: booking.user.username,
       otp,
-      ...cancelOTPStyle,
+      otpStyle,
     }),
     recipientEmail: booking.user.email,
   });
@@ -368,14 +365,17 @@ module.exports.verifyCancelOTP = async (req, res) => {
   await booking.save();
 
   const cancelConfirmHTML = await ejs.renderFile(
-    path.join(__dirname, "../views/emails/cancellationConfirmation.ejs"),
+    path.join(
+      __dirname,
+      "../views/emails/message/cancellationConfirmation.ejs",
+    ),
     {
       username: booking.user.username,
       listingTitle: booking.listing.title,
       checkIn: booking.checkIn.toDateString(),
       checkOut: booking.checkOut.toDateString(),
       totalAmount: booking.totalAmount,
-      ...cancellationConfirmationStyle,
+      mailStyle,
     },
   );
 
@@ -386,12 +386,12 @@ module.exports.verifyCancelOTP = async (req, res) => {
   });
 
   const refundHTML = await ejs.renderFile(
-    path.join(__dirname, "../views/emails/refundProcessed.ejs"),
+    path.join(__dirname, "../views/emails/message/refundProcessed.ejs"),
     {
       username: booking.user.username,
       listingTitle: booking.listing.title,
       totalAmount: booking.totalAmount,
-      ...refundProcessedStyle,
+      mailStyle,
     },
   );
 

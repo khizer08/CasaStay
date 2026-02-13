@@ -6,7 +6,7 @@ module.exports = {
     font-family: Arial, sans-serif;
   `,
   heading: `
-    color: #ff385c;
+    color: #fe424d;
     text-align: center;
   `,
   otpText: `

@@ -1,0 +1,23 @@
+<html>
+  <body>
+    <div style="<%= otpStyle.container %>">
+      <h2 style="<%= otpStyle.heading %>">
+        Confirm Cancellation &#128274;<br />
+      </h2>
+      <p>Hi <%= username %>,</p>
+
+      <p>Your OTP to cancel this booking is:</p>
+
+      <div style="<%= otpStyle.otpText %>">
+        <strong><%= otp %></strong>
+      </div>
+
+      <p>This OTP will expire in <strong>2 minutes</strong>.</p>
+
+      <hr />
+      <p style="<%= otpStyle.footer %>">
+        &mdash; <strong>Team CasaStay</strong>
+      </p>
+    </div>
+  </body>
+</html>

@@ -1,7 +1,7 @@
 const User = require("../models/user.js");
 const sendEmail = require("../utils/sendEmail"); // mail sending logic.
-const welcomeStyle = require("../views/emails/welcomeStyle"); // welcome email styling file.
-const otpStyle = require("../views/emails/otpStyle"); // otp email styling file.
+const mailStyle = require("../views/emails/message/mailStyle"); // message email styling file.
+const otpStyle=require("../views/emails/otp/otpStyle"); // otp email styling file.
 const ejs = require("ejs");
 const path = require("path");
 const { hashOTP } = require("../utils/generateOTP");
@@ -108,10 +108,10 @@ module.exports.verifyEmail = async (req, res, next) => {
     await user.save();
 
     const welcomeHTML = await ejs.renderFile(
-      path.join(__dirname, "../views/emails/welcome.ejs"),
+      path.join(__dirname, "../views/emails/message/welcome.ejs"),
       {
         username: user.username,
-        welcomeStyle,
+        mailStyle,
       },
     );
 

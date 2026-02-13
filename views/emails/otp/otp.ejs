@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    <div style="<%= otpStyle.container %>">
+      <h2 style="<%= otpStyle.heading %>">
+        Verify Your Email &#128274;<br />
+        <%= username.toUpperCase() %>
+      </h2>
+
+      <p>Your OTP for verifying email is:</p>
+
+      <div style="<%= otpStyle.otpText %>">
+        <strong><%= otp %></strong>
+      </div>
+
+      <p>This OTP will expire in <strong>2 minutes</strong>.</p>
+
+      <p>If you didn’t create a CasaStay account, please ignore this email.</p>
+
+      <hr />
+      <p style="<%= otpStyle.footer %>">
+        &mdash; <strong>Team CasaStay</strong>
+      </p>
+    </div>
+  </body>
+</html>

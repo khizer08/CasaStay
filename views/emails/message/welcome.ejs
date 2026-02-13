@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    <div style="<%= mailStyle.container %>">
+      <h2 style="<%= mailStyle.heading %>">
+        Welcome To CasaStay <br />
+        <%= username.toUpperCase() %>! &#128522;
+      </h2>
+
+      <img
+        src="https://casastay.onrender.com/images/CasaStay_Brand.png"
+        alt="Welcome to CasaStay"
+        style="<%= mailStyle.image %>"
+      />
+
+      <p>
+        We&rsquo;re excited to have you on board. Your account has been created
+        successfully.
+      </p>
+
+      <p>
+        &#127757; Discover new destinations<br />
+        &#127969; Find stays you&rsquo;ll love<br />
+        &#127776; Travel with comfort and confidence
+      </p>
+
+      <p>Happy exploring!<br /></p>
+
+      <hr />
+      <p>You received this email because you signed up for CasaStay.</p>
+
+      <p style="<%= mailStyle.footer %>">
+        &mdash; <strong>Team CasaStay</strong>
+      </p>
+    </div>
+  </body>
+</html>
