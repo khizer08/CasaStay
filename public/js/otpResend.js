@@ -13,7 +13,7 @@ if (timerEl && resendBtn && resendMsg) {
     if (remaining <= 0) {
       clearInterval(countdown);
       timerEl.textContent = "0:00";
-      resendMsg.textContent = "You can resend OTP now";
+      resendMsg.textContent = "You Can Resend OTP Now";
       resendBtn.disabled = false;
       return;
     }
@@ -21,8 +21,6 @@ if (timerEl && resendBtn && resendMsg) {
     const minutes = Math.floor(remaining / 60000);
     const seconds = Math.floor((remaining % 60000) / 1000);
 
-    timerEl.textContent =
-      minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
-
+    timerEl.textContent = minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
   }, 1000);
 }

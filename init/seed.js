@@ -13,13 +13,13 @@ const dbUrl = process.env.ATLASDB_URL;
 
 async function connectDB() {
   await mongoose.connect(dbUrl);
-  console.log("DB connected");
+  console.log("DB Connection Successful");
 }
 
 // SAFETY CHECK
 async function seedDB() {
   if (process.env.NODE_ENV === "production") {
-    console.log("Seeding PRODUCTION database");
+    console.log("Seeding PRODUCTION Database");
   }
 
   // wipe data , which was in db.
@@ -48,7 +48,7 @@ async function seedDB() {
     await Listing.create(obj);
   }
 
-  console.log("Database seeded successfully");
+  console.log("Database Seeded Successfully");
 }
 
 connectDB()

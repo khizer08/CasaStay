@@ -1,24 +1,27 @@
 <% layout('/layouts/boilerplate') -%>
+<div class="col-12 col-lg-8 offset-lg-2">
+  <div class="container mt-4 text-center">
+    <h3>Payment Summary</h3>
+    <div class="card p-4 mt-4">
+      <h5><%= booking.listing.title %></h5>
 
-<div class="container mt-5">
-  <h3>Payment Summary</h3>
+      <p>Check-In: <%= booking.checkIn.toDateString() %></p>
+      <p>Check-Out: <%= booking.checkOut.toDateString() %></p>
+      <p>Nights: <%= booking.nights %></p>
 
-  <div class="card p-4 mt-3">
-    <h5><%= booking.listing.title %></h5>
+      <hr />
 
-    <p>Check-in: <%= booking.checkIn.toDateString() %></p>
-    <p>Check-out: <%= booking.checkOut.toDateString() %></p>
-    <p>Nights: <%= booking.nights %></p>
+      <p>Price Per Night: ₹<%= booking.pricePerNight %></p>
+      <p>GST (18%): ₹<%= booking.taxes %></p>
 
-    <hr />
+      <h5>Total: ₹<%= booking.totalAmount %></h5>
 
-    <p>Price per night: ₹<%= booking.pricePerNight %></p>
-    <p>GST (18%): ₹<%= booking.taxes %></p>
-
-    <h5>Total: ₹<%= booking.totalAmount %></h5>
-
-    <form action="/bookings/<%= booking._id %>/send-payment-otp" method="POST">
-      <button class="btn btn-dark mt-3">Confirm Payment</button>
-    </form>
+      <form
+        action="/bookings/<%= booking._id %>/send-payment-otp"
+        method="POST"
+      >
+        <button class="btn btn-dark mt-3">Confirm Payment</button>
+      </form>
+    </div>
   </div>
 </div>

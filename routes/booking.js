@@ -6,11 +6,7 @@ const { isLoggedIn } = require("../middleware");
 const bookingController = require("../controllers/bookings");
 
 //to get users booking page.
-router.get(
-  "/",
-  isLoggedIn,
-  wrapAsync(bookingController.renderMyBookings),
-);
+router.get("/", isLoggedIn, wrapAsync(bookingController.renderMyBookings));
 
 // Create Booking
 router.post(
@@ -32,7 +28,6 @@ router.post(
   isLoggedIn,
   wrapAsync(bookingController.sendPaymentOTP),
 );
-
 
 //Render OTP verification page(get)
 //Verify OTP and confirm payment(post)

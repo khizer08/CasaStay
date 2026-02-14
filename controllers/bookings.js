@@ -14,7 +14,7 @@ module.exports.createBooking = async (req, res) => {
   let { checkIn, checkOut } = req.body;
 
   if (!checkIn || !checkOut) {
-    req.flash("error", "Please select valid dates.");
+    req.flash("error", "Please Select Valid Dates.");
     return res.redirect(`/listings/${id}`);
   }
 
@@ -25,19 +25,19 @@ module.exports.createBooking = async (req, res) => {
   today.setHours(0, 0, 0, 0);
 
   if (startDate < today) {
-    req.flash("error", "You cannot book past dates.");
+    req.flash("error", "You Cannot Book Past Dates.");
     return res.redirect(`/listings/${id}`);
   }
 
   if (startDate >= endDate) {
-    req.flash("error", "Check-out must be after check-in.");
+    req.flash("error", "Check-Out Must Be After Check-In.");
     return res.redirect(`/listings/${id}`);
   }
 
   const listing = await Listing.findById(id);
 
   if (!listing) {
-    req.flash("error", "Listing not found.");
+    req.flash("error", "Listing Not Found.");
     return res.redirect("/listings");
   }
 
@@ -49,7 +49,7 @@ module.exports.createBooking = async (req, res) => {
   });
 
   if (userExistingBooking) {
-    req.flash("error", "You have already booked this listing.");
+    req.flash("error", "You Have Already Booked This Listing.");
     return res.redirect(`/listings/${id}`);
   }
 
@@ -63,7 +63,7 @@ module.exports.createBooking = async (req, res) => {
   if (overlappingBooking) {
     req.flash(
       "error",
-      "This listing is already booked for the selected dates.",
+      "This Listing Is Already Booked For The Selected Dates.",
     );
     return res.redirect(`/listings/${id}`);
   }
@@ -103,12 +103,12 @@ module.exports.renderPaymentPage = async (req, res) => {
     .populate("user");
 
   if (!booking) {
-    req.flash("error", "Booking not found.");
+    req.flash("error", "Booking Not Found.");
     return res.redirect("/listings");
   }
 
   if (!booking.user._id.equals(req.user._id)) {
-    req.flash("error", "Unauthorized access.");
+    req.flash("error", "Unauthorized Access.");
     return res.redirect("/listings");
   }
 
@@ -122,17 +122,17 @@ module.exports.sendPaymentOTP = async (req, res) => {
   const booking = await Booking.findById(id).populate("user");
 
   if (!booking) {
-    req.flash("error", "Booking not found.");
+    req.flash("error", "Booking Not Found.");
     return res.redirect("/listings");
   }
 
   if (!booking.user._id.equals(req.user._id)) {
-    req.flash("error", "Unauthorized.");
+    req.flash("error", "Unauthorized Access.");
     return res.redirect("/bookings");
   }
 
   if (booking.paymentOTPExpires && Date.now() < booking.paymentOTPExpires) {
-    req.flash("error", "Please wait before requesting a new OTP.");
+    req.flash("error", "Please Wait Before Requesting A New OTP.");
     return res.redirect(`/bookings/${id}/verify-payment`);
   }
 
@@ -160,12 +160,12 @@ module.exports.renderVerifyPaymentPage = async (req, res) => {
   const booking = await Booking.findById(id);
 
   if (!booking) {
-    req.flash("error", "Booking not found.");
+    req.flash("error", "Booking Not Found.");
     return res.redirect("/listings");
   }
 
   if (!booking.user.equals(req.user._id)) {
-    req.flash("error", "Unauthorized.");
+    req.flash("error", "Unauthorized Access.");
     return res.redirect("/listings");
   }
 
@@ -192,7 +192,7 @@ module.exports.verifyPaymentOTP = async (req, res) => {
   }).populate("listing user");
 
   if (!booking) {
-    req.flash("error", "Invalid or expired OTP.");
+    req.flash("error", "Invalid Or Expired OTP.");
     return res.redirect(`/bookings/${id}/verify-payment`);
   }
 
@@ -219,11 +219,11 @@ module.exports.verifyPaymentOTP = async (req, res) => {
 
   await sendEmail({
     to: booking.user.email,
-    subject: "Your Booking is Confirmed 🎉",
+    subject: "Your Booking Is Confirmed 🎉",
     html: bookingHTML,
   });
 
-  req.flash("success", "Payment confirmed successfully.");
+  req.flash("success", "Payment Confirmed Successfully.");
   res.redirect(`/bookings/${id}/confirmation`);
 };
 
@@ -233,12 +233,12 @@ module.exports.renderConfirmationPage = async (req, res) => {
   const booking = await Booking.findById(id).populate("listing");
 
   if (!booking || !booking.listing) {
-    req.flash("error", "Booking not found.");
+    req.flash("error", "Booking Not Found.");
     return res.redirect("/listings");
   }
 
   if (!booking.user.equals(req.user._id)) {
-    req.flash("error", "Unauthorized access.");
+    req.flash("error", "Unauthorized Access.");
     return res.redirect("/listings");
   }
 
@@ -266,7 +266,7 @@ module.exports.cancelBooking = async (req, res) => {
   const booking = await Booking.findById(id);
 
   if (!booking) {
-    req.flash("error", "Booking not found.");
+    req.flash("error", "Booking Not Found.");
     return res.redirect("/bookings");
   }
 
@@ -285,12 +285,12 @@ module.exports.renderVerifyCancelPage = async (req, res) => {
   const booking = await Booking.findById(id);
 
   if (!booking) {
-    req.flash("error", "Booking not found.");
+    req.flash("error", "Booking Not Found.");
     return res.redirect("/bookings");
   }
 
   if (!booking.user.equals(req.user._id)) {
-    req.flash("error", "Unauthorized.");
+    req.flash("error", "Unauthorized Access.");
     return res.redirect("/bookings");
   }
 
@@ -309,17 +309,17 @@ module.exports.sendCancelOTP = async (req, res) => {
   const booking = await Booking.findById(id).populate("user");
 
   if (!booking) {
-    req.flash("error", "Booking not found.");
+    req.flash("error", "Booking Not Found.");
     return res.redirect("/bookings");
   }
 
   if (!booking.user._id.equals(req.user._id)) {
-    req.flash("error", "Unauthorized.");
+    req.flash("error", "Unauthorized Access.");
     return res.redirect("/bookings");
   }
 
   if (booking.cancelOTPExpires && Date.now() < booking.cancelOTPExpires) {
-    req.flash("error", "Please wait before requesting a new OTP.");
+    req.flash("error", "Please Wait Before Requesting A New OTP.");
     return res.redirect(`/bookings/${id}/verify-cancel`);
   }
 
@@ -353,7 +353,7 @@ module.exports.verifyCancelOTP = async (req, res) => {
   }).populate("user listing");
 
   if (!booking) {
-    req.flash("error", "Invalid or expired OTP.");
+    req.flash("error", "Invalid Or Expired OTP.");
     return res.redirect("/bookings");
   }
 
@@ -406,5 +406,5 @@ module.exports.verifyCancelOTP = async (req, res) => {
   req.session.save(() => {
     res.redirect("/bookings");
   });
-  req.flash("success", "Booking cancelled successfully.");
+  req.flash("success", "Booking Cancelled Successfully.");
 };

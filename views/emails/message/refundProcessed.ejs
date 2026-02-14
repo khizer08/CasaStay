@@ -2,18 +2,20 @@
 <html>
   <body>
     <div style="<%= mailStyle.refundProcessedContainerStyle %>">
-      <h2 style="<%= mailStyle.refundProcessedHeadingStyle %>">Refund Processed 💸</h2>
+      <h2 style="<%= mailStyle.refundProcessedHeadingStyle %>">
+        Refund Processed 💸
+      </h2>
 
       <p>Hi <b><%= username %></b>,</p>
 
       <p>
-        Your refund for the cancelled booking of <b><%= listingTitle %></b> has
-        been successfully processed.
+        Your Refund For The Cancelled Booking Of <b><%= listingTitle %></b> Has
+        Been Successfully Processed.
       </p>
 
       <p><b>Refund Amount:</b> ₹<%= totalAmount %></p>
 
-      <p>The amount should reflect in your account shortly.</p>
+      <p>The Amount Should Reflect In Your Account Shortly.</p>
 
       <hr />
       <p style="<%= mailStyle.footer %>">

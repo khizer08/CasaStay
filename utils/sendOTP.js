@@ -25,7 +25,7 @@ module.exports.sendOTP = async ({
   // 3 Render email template dynamically
   const html = await ejs.renderFile(
     path.join(__dirname, `../views/emails/otp/${template}`),
-    templateData(otp)
+    templateData(otp),
   );
 
   // 4 Send email

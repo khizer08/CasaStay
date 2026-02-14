@@ -27,7 +27,7 @@ module.exports.showListing = async (req, res) => {
     .populate("owner");
 
   if (!listing) {
-    req.flash("error", "your listing was deleted!");
+    req.flash("error", "Your Listing Was Deleted!");
     return res.redirect("/listings");
   }
 
@@ -72,7 +72,7 @@ module.exports.createListing = async (req, res) => {
   );
 
   if (!coords) {
-    req.flash("error", "Location not found!");
+    req.flash("error", "Location Not Found!");
     return res.redirect("/listings/new");
   }
 
@@ -84,7 +84,7 @@ module.exports.createListing = async (req, res) => {
   newListing.image = { url, filename };
 
   await newListing.save();
-  req.flash("success", "New listing created!"); // key message pair.
+  req.flash("success", "New listing Created!"); // key message pair.
   res.redirect("/listings");
 };
 
@@ -94,7 +94,7 @@ module.exports.renderEditForm = async (req, res) => {
   const listing = await Listing.findById(id);
 
   if (!listing) {
-    req.flash("error", "your listing was deleted!"); // key message pair.
+    req.flash("error", "Your Listing Was Deleted!"); // key message pair.
     return res.redirect("/listings");
   }
 
@@ -111,7 +111,7 @@ module.exports.updateListing = async (req, res) => {
   let listing = await Listing.findById(id);
 
   if (!listing) {
-    req.flash("error", "your listing was deleted!"); // key message pair.
+    req.flash("error", "Your Listing Was Deleted!"); // key message pair.
     return res.redirect("/listings");
   }
 
@@ -132,7 +132,7 @@ module.exports.updateListing = async (req, res) => {
     );
 
     if (!coords) {
-      req.flash("error", "Updated location not found.");
+      req.flash("error", "Updated Location Not Found.");
       return res.redirect(`/listings/${id}/edit`);
     }
 
@@ -149,7 +149,7 @@ module.exports.updateListing = async (req, res) => {
 
   await listing.save();
 
-  req.flash("success", "listing updated!"); // key message pair.
+  req.flash("success", "Listing Updated!"); // key message pair.
   res.redirect(`/listings/${id}`);
 };
 
@@ -158,6 +158,6 @@ module.exports.destroyListing = async (req, res) => {
   let { id } = req.params;
   let deletedListing = await Listing.findByIdAndDelete(id);
   console.log(deletedListing);
-  req.flash("success", "listing deleted!"); // key message pair.
+  req.flash("success", "Listing Deleted!"); // key message pair.
   res.redirect("/listings");
 };

@@ -10,30 +10,30 @@ module.exports.createReview = async (req, res) => {
 
   await newReview.save();
   await listing.save();
-  req.flash("success", "new review created!"); // key message pair.
+  req.flash("success", "New Review Created!"); // key message pair.
   res.redirect(`/listings/${listing._id}`);
 };
 
 module.exports.destroyReview = async (req, res) => {
-    //this module is used to delete a particular listing's Review.
-    let { id, reviewId } = req.params;
+  //this module is used to delete a particular listing's Review.
+  let { id, reviewId } = req.params;
 
-    const review = await Review.findById(reviewId);
+  const review = await Review.findById(reviewId);
 
-    if (!review) {
-        req.flash("error", "Review not found.");
-        return res.redirect(`/listings/${id}`);
-    }
+  if (!review) {
+    req.flash("error", "Review Not Found.");
+    return res.redirect(`/listings/${id}`);
+  }
 
-    //  AUTHOR CHECK
-    if (!review.author.equals(req.user._id)) {
-        req.flash("error", "Unauthorized action.");
-        return res.redirect(`/listings/${id}`);
-    }
+  //  AUTHOR CHECK
+  if (!review.author.equals(req.user._id)) {
+    req.flash("error", "Unauthorized Access.");
+    return res.redirect(`/listings/${id}`);
+  }
 
-    await Listing.findByIdAndUpdate(id, { $pull: { reviews: reviewId } });
-    await Review.findByIdAndDelete(reviewId);
+  await Listing.findByIdAndUpdate(id, { $pull: { reviews: reviewId } });
+  await Review.findByIdAndDelete(reviewId);
 
-    req.flash("success", "review deleted!");
-    res.redirect(`/listings/${id}`);
+  req.flash("success", "Review Deleted!");
+  res.redirect(`/listings/${id}`);
 };

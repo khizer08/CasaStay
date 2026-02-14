@@ -7,7 +7,7 @@ const { getCoordinates } = require("../utils/geocode");
 
 async function main() {
   await mongoose.connect("mongodb://127.0.0.1:27017/casastay");
-  console.log("connection successful");
+  console.log("DB Connection Successful");
 }
 
 const initDB = async () => {
@@ -36,7 +36,7 @@ const initDB = async () => {
     await Listing.create(obj);
   }
 
-  console.log("data was initialized");
+  console.log("Data Was Initialized");
 };
 
 main().then(initDB).catch(console.log);

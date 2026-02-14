@@ -18,13 +18,10 @@ const sendEmail = async ({ to, subject, html }) => {
           "api-key": process.env.BREVO_API_KEY,
           "Content-Type": "application/json",
         },
-      }
+      },
     );
   } catch (err) {
-    console.error(
-      "Email API error:",
-      err.response?.data || err.message
-    );
+    console.error("Email API error:", err.response?.data || err.message);
   }
 };
 
