@@ -403,6 +403,8 @@ module.exports.verifyCancelOTP = async (req, res) => {
     });
   }, 10000);
 
+  req.session.save(() => {
+    res.redirect("/bookings");
+  });
   req.flash("success", "Booking cancelled successfully.");
-  res.redirect("/bookings");
 };
