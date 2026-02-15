@@ -59,28 +59,12 @@ const bookingSchema = new Schema(
       default: "pending",
     },
 
-    paymentOTPHash: {
-      type: String,
-    },
-
-    paymentOTPExpires: {
-      type: Date,
-    },
-
+    // otp based
     cancelOTPHash: {
       type: String,
     },
 
     cancelOTPExpires: {
-      type: Date,
-    },
-
-    // otp attempts
-    paymentOTPAttempts: {
-      type: Number,
-      default: 0,
-    },
-    paymentOTPLastSentAt: {
       type: Date,
     },
 

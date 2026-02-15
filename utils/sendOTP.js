@@ -18,7 +18,7 @@ module.exports.sendOTP = async ({
 
   // 2 Store hash + expiry (2 mins)
   target[hashField] = otpHash;
-  target[expiryField] = Date.now() + 0.2 * 60 * 1000;
+  target[expiryField] = Date.now() + 0.5 * 60 * 1000;
 
   await target.save();
 

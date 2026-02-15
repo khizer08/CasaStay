@@ -23,20 +23,6 @@ router.get(
   wrapAsync(bookingController.renderPaymentPage),
 );
 
-//Send Payment OTP (when user clicks confirm)
-router.post(
-  "/:id/send-payment-otp",
-  isLoggedIn,
-  wrapAsync(bookingController.sendPaymentOTP),
-);
-
-//Render OTP verification page(get)
-//Verify OTP and confirm payment(post)
-router
-  .route("/:id/verify-payment")
-  .get(isLoggedIn, wrapAsync(bookingController.renderVerifyPaymentPage))
-  .post(isLoggedIn, wrapAsync(bookingController.verifyPaymentOTP));
-
 // Confirmation page
 router.get(
   "/:id/confirmation",
@@ -44,6 +30,7 @@ router.get(
   wrapAsync(bookingController.renderConfirmationPage),
 );
 
+// Cancel OTP
 router.post(
   "/:id/send-cancel-otp",
   isLoggedIn,
