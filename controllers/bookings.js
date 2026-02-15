@@ -130,20 +130,28 @@ module.exports.sendPaymentOTP = async (req, res) => {
     return res.redirect("/bookings");
   }
 
-  //  LIMIT CHECK
-  if (booking.paymentResendAttempts >= 3) {
-    req.flash("error", "Resend OTP Limit Reached.");
-    return res.redirect(`/bookings/${id}/verify-payment`);
+  const MAX_ATTEMPTS = 3;
+  const WINDOW_TIME = 10 * 60 * 1000;
+
+  if (
+    booking.paymentOTPLastSentAt &&
+    Date.now() - booking.paymentOTPLastSentAt > WINDOW_TIME
+  ) {
+    booking.paymentOTPAttempts = 0;
   }
 
-  //  Still Active OTP
-  if (booking.paymentOTPExpires && Date.now() < booking.paymentOTPExpires) {
-    req.flash("error", "Please Wait Before Requesting A New OTP.");
+  if (booking.paymentOTPAttempts >= MAX_ATTEMPTS) {
+    const timeLeft = WINDOW_TIME - (Date.now() - booking.paymentOTPLastSentAt);
+
+    const minutesLeft = Math.ceil(timeLeft / 60000);
+
+    req.flash(
+      "error",
+      `Resend OTP Limit Reached. Please Try After ${minutesLeft} Minute(s).`,
+    );
+
     return res.redirect(`/bookings/${id}/verify-payment`);
   }
-
-  // 🔢 Increase Attempts
-  booking.paymentResendAttempts += 1;
 
   await sendOTP({
     target: booking,
@@ -159,12 +167,9 @@ module.exports.sendPaymentOTP = async (req, res) => {
     recipientEmail: booking.user.email,
   });
 
+  booking.paymentOTPAttempts += 1;
+  booking.paymentOTPLastSentAt = Date.now();
   await booking.save();
-
-  req.flash(
-    "success",
-    `OTP Sent. Attempts Left: ${3 - booking.paymentResendAttempts}`,
-  );
 
   res.redirect(`/bookings/${id}/verify-payment`);
 };
@@ -195,7 +200,7 @@ module.exports.renderVerifyPaymentPage = async (req, res) => {
     otpExpiry: booking.paymentOTPExpires
       ? booking.paymentOTPExpires.getTime()
       : 0,
-    paymentResendAttemptsLeft,
+    paymentResendAttemptsLeft: 3 - booking.paymentOTPAttempts,
   });
 };
 
@@ -329,7 +334,7 @@ module.exports.renderVerifyCancelPage = async (req, res) => {
     otpExpiry: booking.cancelOTPExpires
       ? booking.cancelOTPExpires.getTime()
       : 0,
-    cancelResendAttemptsLeft,
+    cancelResendAttemptsLeft: 3 - booking.cancelOTPAttempts,
   });
 };
 
@@ -348,17 +353,28 @@ module.exports.sendCancelOTP = async (req, res) => {
     return res.redirect("/bookings");
   }
 
-  if (booking.cancelResendAttempts >= 3) {
-    req.flash("error", "Resend OTP Limit Reached.");
-    return res.redirect(`/bookings/${id}/verify-cancel`);
+  const MAX_ATTEMPTS = 3;
+  const WINDOW_TIME = 10 * 60 * 1000;
+
+  if (
+    booking.cancelOTPLastSentAt &&
+    Date.now() - booking.cancelOTPLastSentAt > WINDOW_TIME
+  ) {
+    booking.cancelOTPAttempts = 0;
   }
 
-  if (booking.cancelOTPExpires && Date.now() < booking.cancelOTPExpires) {
-    req.flash("error", "Please Wait Before Requesting A New OTP.");
+  if (booking.cancelOTPAttempts >= MAX_ATTEMPTS) {
+    const timeLeft = WINDOW_TIME - (Date.now() - booking.cancelOTPLastSentAt);
+
+    const minutesLeft = Math.ceil(timeLeft / 60000);
+
+    req.flash(
+      "error",
+      `Resend OTP Limit Reached. Please Try After ${minutesLeft} Minute(s).`,
+    );
+
     return res.redirect(`/bookings/${id}/verify-cancel`);
   }
-
-  booking.cancelResendAttempts += 1;
 
   await sendOTP({
     target: booking,
@@ -374,12 +390,9 @@ module.exports.sendCancelOTP = async (req, res) => {
     recipientEmail: booking.user.email,
   });
 
+  booking.cancelOTPAttempts += 1;
+  booking.cancelOTPLastSentAt = Date.now();
   await booking.save();
-
-  req.flash(
-    "success",
-    `OTP Sent. Attempts Left: ${3 - booking.cancelResendAttempts}`,
-  );
 
   res.redirect(`/bookings/${id}/verify-cancel`);
 };
