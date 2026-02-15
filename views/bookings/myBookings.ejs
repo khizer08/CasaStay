@@ -37,12 +37,14 @@
 
             <p class="card-text">
               <strong>Status:</strong>
-              <% if (booking.bookingStatus === "active") { %>
-                <span class="text-success">Active</span>
-              <% } else { %>
-                <span class="text-danger">Cancelled</span>
-              <% } %>
-            </p>
+              <% if (booking.bookingStatus === "confirmed") { %>
+                <span class="text-success">Confirmed</span>
+              <% } else if (booking.bookingStatus === "cancelled") { %>
+                    <span class="text-danger">Cancelled</span>
+                  <% } else { %>
+                  <span class="text-warning">Pending</span>
+                  <% } %>
+              </p>
 
             <p class="card-text">
               <strong>Total:</strong>
@@ -55,7 +57,7 @@
                 View
               </a>
 
-              <% if (booking.bookingStatus === "active") { %>
+              <% if (booking.bookingStatus === "confirmed") { %>
                 <form 
                   method="POST"
                   action="/bookings/<%= booking._id %>/send-cancel-otp"

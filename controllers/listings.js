@@ -34,8 +34,8 @@ module.exports.showListing = async (req, res) => {
   // check if listing has any active confirmed booking
   const activeBooking = await Booking.findOne({
     listing: listing._id,
-    paymentStatus: "confirmed",
-    bookingStatus: "active",
+    paymentStatus: "paid",
+    bookingStatus: "confirmed",
   });
 
   // check if current logged-in user already booked this listing
@@ -45,8 +45,8 @@ module.exports.showListing = async (req, res) => {
     userBooking = await Booking.findOne({
       listing: listing._id,
       user: req.user._id,
-      paymentStatus: "confirmed",
-      bookingStatus: "active",
+      paymentStatus: "paid",
+      bookingStatus: "confirmed",
     });
   }
   // current logged-in user already booked logic ends here

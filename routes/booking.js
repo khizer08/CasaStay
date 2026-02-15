@@ -23,6 +23,13 @@ router.get(
   wrapAsync(bookingController.renderPaymentPage),
 );
 
+// after razor payment verification is done here.
+router.post(
+  "/verify-payment",
+  isLoggedIn,
+  wrapAsync(bookingController.verifyRazorpayPayment),
+);
+
 // Confirmation page
 router.get(
   "/:id/confirmation",

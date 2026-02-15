@@ -49,17 +49,31 @@ const bookingSchema = new Schema(
 
     paymentStatus: {
       type: String,
-      enum: ["pending", "confirmed", "cancelled"],
+      enum: ["pending", "paid", "refunded"],
       default: "pending",
     },
 
     bookingStatus: {
       type: String,
-      enum: ["pending", "active", "cancelled"],
+      enum: ["pending", "confirmed", "cancelled"],
       default: "pending",
     },
 
-    // otp based
+    // payment using RAZORPAY
+    razorpayOrderId: {
+      type: String,
+    },
+
+    razorpayPaymentId: {
+      type: String,
+    },
+
+    razorpaySignature: {
+      type: String,
+    },
+    //ends here
+
+    // cancel booking otp based
     cancelOTPHash: {
       type: String,
     },

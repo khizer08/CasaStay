@@ -7,6 +7,8 @@ const mailStyle = require("../views/emails/message/mailStyle"); // message email
 const otpStyle = require("../views/emails/otp/otpStyle"); // otp email styling file.
 const { hashOTP } = require("../utils/generateOTP");
 const { sendOTP } = require("../utils/sendOTP");
+const razorpay = require("../razorpayConfig");
+const crypto = require("crypto");
 
 module.exports.createBooking = async (req, res) => {
   // this module is used to handle the "booking logic".
@@ -44,8 +46,8 @@ module.exports.createBooking = async (req, res) => {
   const userExistingBooking = await Booking.findOne({
     listing: listing._id,
     user: req.user._id,
-    paymentStatus: "confirmed",
-    bookingStatus: "active",
+    paymentStatus: "paid",
+    bookingStatus: "confirmed",
   });
 
   if (userExistingBooking) {
@@ -55,7 +57,8 @@ module.exports.createBooking = async (req, res) => {
 
   const overlappingBooking = await Booking.findOne({
     listing: listing._id,
-    paymentStatus: "confirmed",
+    paymentStatus: "paid",
+    bookingStatus: "confirmed",
     checkIn: { $lt: endDate },
     checkOut: { $gt: startDate },
   });
@@ -96,7 +99,7 @@ module.exports.createBooking = async (req, res) => {
 
 module.exports.renderPaymentPage = async (req, res) => {
   // this module is used to handle the payment page initially rendered logic.
-  let { id } = req.params;
+  const { id } = req.params;
 
   const booking = await Booking.findById(id)
     .populate("listing")
@@ -112,7 +115,55 @@ module.exports.renderPaymentPage = async (req, res) => {
     return res.redirect("/listings");
   }
 
-  res.render("bookings/payment.ejs", { booking });
+  if (booking.paymentStatus === "paid") {
+    req.flash("success", "Payment Already Completed.");
+    return res.redirect(`/bookings/${id}/confirmation`);
+  }
+
+  // Create Razorpay Order
+  const options = {
+    amount: booking.totalAmount * 100, // paise
+    currency: "INR",
+    receipt: `receipt_${booking._id}`,
+  };
+
+  const order = await razorpay.orders.create(options);
+
+  booking.razorpayOrderId = order.id;
+  await booking.save();
+
+  res.render("bookings/payment.ejs", {
+    booking,
+    razorpayKey: process.env.RAZORPAY_KEY_ID,
+    orderId: order.id,
+  });
+};
+
+module.exports.verifyRazorpayPayment = async (req, res) => {
+  const {
+    razorpay_order_id,
+    razorpay_payment_id,
+    razorpay_signature,
+    bookingId,
+  } = req.body;
+
+  const body = razorpay_order_id + "|" + razorpay_payment_id;
+
+  const expectedSignature = crypto
+    .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+    .update(body.toString())
+    .digest("hex");
+
+  if (expectedSignature === razorpay_signature) {
+    await Booking.findByIdAndUpdate(bookingId, {
+      paymentStatus: "paid",
+      bookingStatus: "confirmed",
+    });
+
+    return res.json({ success: true });
+  } else {
+    return res.json({ success: false });
+  }
 };
 
 module.exports.renderConfirmationPage = async (req, res) => {
@@ -138,8 +189,8 @@ module.exports.renderMyBookings = async (req, res) => {
 
   const bookings = await Booking.find({
     user: req.user._id,
-    bookingStatus: "active",
-    paymentStatus: "confirmed",
+    bookingStatus: "confirmed",
+    paymentStatus: "paid",
   })
     .populate("listing")
     .sort({ createdAt: -1 });
@@ -273,7 +324,7 @@ module.exports.verifyCancelOTP = async (req, res) => {
   }
 
   booking.bookingStatus = "cancelled";
-  booking.paymentStatus = "cancelled";
+  booking.paymentStatus = "refunded";
   booking.cancelOTPHash = undefined;
   booking.cancelOTPExpires = undefined;
 

@@ -28,6 +28,7 @@ app.set("trust proxy", 1); //  Required For Render (Rate Limiter Behind Proxy).
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 app.use(methodOverride("_method"));
 app.use(express.static(path.join(__dirname, "public")));
 

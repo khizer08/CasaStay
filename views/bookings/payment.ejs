@@ -1,7 +1,9 @@
 <% layout('/layouts/boilerplate') -%>
+
 <div class="col-12 col-lg-8 offset-lg-2">
   <div class="container mt-4 text-center">
     <h3>Payment Summary</h3>
+
     <div class="card p-4 mt-4">
       <h5><%= booking.listing.title %></h5>
 
@@ -16,12 +18,21 @@
 
       <h5>Total: ₹<%= booking.totalAmount %></h5>
 
-      <form
-        action="/bookings/<%= booking._id %>/send-payment-otp"
-        method="POST"
+      <!-- Razorpay Button -->
+      <button
+        id="pay-btn"
+        class="btn btn-dark mt-3"
+        data-key="<%= razorpayKey %>"
+        data-amount="<%= booking.totalAmount * 100 %>"
+        data-order="<%= orderId %>"
+        data-booking="<%= booking._id %>"
       >
-        <button class="btn btn-dark mt-3">Confirm Payment</button>
-      </form>
+        Confirm Payment
+      </button>
     </div>
   </div>
 </div>
+
+<!-- Razorpay Script -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script src="/js/razorpayPayment.js"></script>
