@@ -8,9 +8,13 @@ const { createOtpResendLimiter } = require("../utils/rateLimit");
 
 const bookingController = require("../controllers/bookings");
 
-const paymentResendLimiter = createOtpResendLimiter();
-const cancelResendLimiter = createOtpResendLimiter();
+const paymentResendLimiter = createOtpResendLimiter(
+  (req) => `/bookings/${req.params.id}/verify-payment`,
+);
 
+const cancelResendLimiter = createOtpResendLimiter(
+  (req) => `/bookings/${req.params.id}/verify-cancel`,
+);
 
 //to get users booking page.
 router.get("/", isLoggedIn, wrapAsync(bookingController.renderMyBookings));
