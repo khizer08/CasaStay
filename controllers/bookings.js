@@ -154,16 +154,46 @@ module.exports.verifyRazorpayPayment = async (req, res) => {
     .update(body.toString())
     .digest("hex");
 
-  if (expectedSignature === razorpay_signature) {
-    await Booking.findByIdAndUpdate(bookingId, {
-      paymentStatus: "paid",
-      bookingStatus: "confirmed",
-    });
-
-    return res.json({ success: true });
-  } else {
-    return res.json({ success: false });
+  if (expectedSignature !== razorpay_signature) {
+    return res.status(400).json({ success: false });
   }
+
+  const booking = await Booking.findById(bookingId).populate("user listing");
+
+  if (!booking) {
+    return res.status(400).json({ success: false });
+  }
+
+  // Update Booking
+  booking.paymentStatus = "paid";
+  booking.bookingStatus = "confirmed";
+  booking.razorpayPaymentId = razorpay_payment_id;
+  booking.razorpaySignature = razorpay_signature;
+
+  await booking.save();
+
+  // 📧 Send Booking Confirmation Email
+  const bookingHTML = await ejs.renderFile(
+    path.join(__dirname, "../views/emails/message/bookingConfirmation.ejs"),
+    {
+      username: booking.user.username,
+      listingTitle: booking.listing.title,
+      checkIn: booking.checkIn.toDateString(),
+      checkOut: booking.checkOut.toDateString(),
+      nights: booking.nights,
+      totalAmount: booking.totalAmount,
+      bookingId: booking._id,
+      mailStyle,
+    },
+  );
+
+  await sendEmail({
+    to: booking.user.email,
+    subject: "Your Booking Has Been Confirmed",
+    html: bookingHTML,
+  });
+
+  return res.json({ success: true });
 };
 
 module.exports.renderConfirmationPage = async (req, res) => {
@@ -307,7 +337,7 @@ module.exports.sendCancelOTP = async (req, res) => {
 };
 
 module.exports.verifyCancelOTP = async (req, res) => {
-  let { id } = req.params;
+  const { id } = req.params;
   const { otp } = req.body;
 
   const otpHash = hashOTP(otp);
@@ -323,57 +353,91 @@ module.exports.verifyCancelOTP = async (req, res) => {
     return res.redirect("/bookings");
   }
 
-  booking.bookingStatus = "cancelled";
-  booking.paymentStatus = "refunded";
-  booking.cancelOTPHash = undefined;
-  booking.cancelOTPExpires = undefined;
+  if (booking.paymentStatus !== "paid") {
+    req.flash("error", "Booking Is Not Eligible For Refund.");
+    return res.redirect("/bookings");
+  }
 
-  booking.cancelOTPAttempts = 0;
-  await booking.save();
+  try {
+    // 🔒 Clear OTP First
+    booking.cancelOTPHash = undefined;
+    booking.cancelOTPExpires = undefined;
+    booking.cancelOTPAttempts = 0;
 
-  const cancelConfirmHTML = await ejs.renderFile(
-    path.join(
-      __dirname,
-      "../views/emails/message/cancellationConfirmation.ejs",
-    ),
-    {
-      username: booking.user.username,
-      listingTitle: booking.listing.title,
-      checkIn: booking.checkIn.toDateString(),
-      checkOut: booking.checkOut.toDateString(),
-      totalAmount: booking.totalAmount,
-      mailStyle,
-    },
-  );
+    await booking.save();
 
-  await sendEmail({
-    to: booking.user.email,
-    subject: "Your Booking Has Been Cancelled",
-    html: cancelConfirmHTML,
-  });
+    // 1️⃣ Send Cancellation Email Immediately
+    const cancelConfirmHTML = await ejs.renderFile(
+      path.join(
+        __dirname,
+        "../views/emails/message/cancellationConfirmation.ejs",
+      ),
+      {
+        username: booking.user.username,
+        listingTitle: booking.listing.title,
+        checkIn: booking.checkIn.toDateString(),
+        checkOut: booking.checkOut.toDateString(),
+        totalAmount: booking.totalAmount,
+        mailStyle,
+      },
+    );
 
-  const refundHTML = await ejs.renderFile(
-    path.join(__dirname, "../views/emails/message/refundProcessed.ejs"),
-    {
-      username: booking.user.username,
-      listingTitle: booking.listing.title,
-      totalAmount: booking.totalAmount,
-      mailStyle,
-    },
-  );
-
-  setTimeout(async () => {
     await sendEmail({
       to: booking.user.email,
-      subject: "Your Refund Has Been Processed",
-      html: refundHTML,
+      subject: "Your Booking Has Been Cancelled",
+      html: cancelConfirmHTML,
     });
-  }, 10000);
 
-  delete req.session.cancelResendAttemptsLeft; // after successful payment reset attempts.
-  req.flash("success", "Booking Cancelled Successfully.");
+    // 2️⃣ Delay Refund Processing (5 Seconds)
+    setTimeout(async () => {
+      try {
+        const refund = await razorpay.payments.refund(
+          booking.razorpayPaymentId,
+          {
+            amount: booking.totalAmount * 100,
+          },
+        );
 
-  req.session.save(() => {
+        booking.bookingStatus = "cancelled";
+        booking.paymentStatus = "refunded";
+
+        await booking.save();
+
+        // 3️⃣ Send Refund Email After Refund Success
+        const refundHTML = await ejs.renderFile(
+          path.join(__dirname, "../views/emails/message/refundProcessed.ejs"),
+          {
+            username: booking.user.username,
+            listingTitle: booking.listing.title,
+            totalAmount: booking.totalAmount,
+            refundId: refund.id,
+            refundStatus: refund.status,
+            mailStyle,
+          },
+        );
+
+        await sendEmail({
+          to: booking.user.email,
+          subject: "Your Refund Has Been Successfully Processed",
+          html: refundHTML,
+        });
+      } catch (refundError) {
+        console.error("Refund Error:", refundError);
+      }
+    }, 5000); // 5 second delay
+
+    delete req.session.cancelResendAttemptsLeft;
+
+    req.flash("success", "Booking Cancelled Successfully.");
+
+    req.session.save(() => {
+      res.redirect("/bookings");
+    });
+  } catch (err) {
+    console.error("Cancellation Error:", err);
+
+    req.flash("error", "Something Went Wrong. Please Try Again.");
+
     res.redirect("/bookings");
-  });
+  }
 };

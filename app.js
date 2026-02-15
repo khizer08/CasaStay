@@ -14,11 +14,12 @@ const flash = require("connect-flash");
 const passport = require("passport");
 const LocalStrategy = require("passport-local");
 const User = require("./models/user.js");
-const bookingRouter = require("./routes/booking.js");
 
 const listingRouter = require("./routes/listing.js"); // requiring the whole "listings" related routes.
 const reviewRouter = require("./routes/review.js"); // requiring the whole "reviews" related routes.
 const userRouter = require("./routes/user.js"); // requiring the whole "users" related routes.
+const bookingRouter = require("./routes/booking.js"); // requiring the whole "booking" related routes.
+const webhookRouter = require("./routes/webhook"); // requiring the whole "webhook" related routes.
 
 const port = 8080;
 const app = express();
@@ -27,8 +28,15 @@ app.set("trust proxy", 1); //  Required For Render (Rate Limiter Behind Proxy).
 
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
+app.use(
+  //razorpay webhook
+  "/webhook/razorpay",
+  express.raw({ type: "application/json" }),
+  webhookRouter,
+);
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+
 app.use(methodOverride("_method"));
 app.use(express.static(path.join(__dirname, "public")));
 
