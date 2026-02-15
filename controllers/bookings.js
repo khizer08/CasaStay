@@ -158,39 +158,10 @@ module.exports.verifyRazorpayPayment = async (req, res) => {
     return res.status(400).json({ success: false });
   }
 
-  const booking = await Booking.findById(bookingId).populate("user listing");
-
-  if (!booking) {
-    return res.status(400).json({ success: false });
-  }
-
-  // Update Booking
-  booking.paymentStatus = "paid";
-  booking.bookingStatus = "confirmed";
-  booking.razorpayPaymentId = razorpay_payment_id;
-  booking.razorpaySignature = razorpay_signature;
-
-  await booking.save();
-
-  // 📧 Send Booking Confirmation Email
-  const bookingHTML = await ejs.renderFile(
-    path.join(__dirname, "../views/emails/message/bookingConfirmation.ejs"),
-    {
-      username: booking.user.username,
-      listingTitle: booking.listing.title,
-      checkIn: booking.checkIn.toDateString(),
-      checkOut: booking.checkOut.toDateString(),
-      nights: booking.nights,
-      totalAmount: booking.totalAmount,
-      bookingId: booking._id,
-      mailStyle,
-    },
-  );
-
-  await sendEmail({
-    to: booking.user.email,
-    subject: "Your Booking Has Been Confirmed",
-    html: bookingHTML,
+  // 🔥 Only Save Payment Details — DO NOT Confirm Here
+  await Booking.findByIdAndUpdate(bookingId, {
+    razorpayPaymentId: razorpay_payment_id,
+    razorpaySignature: razorpay_signature,
   });
 
   return res.json({ success: true });
@@ -359,14 +330,13 @@ module.exports.verifyCancelOTP = async (req, res) => {
   }
 
   try {
-    // 🔒 Clear OTP First
+    // Clear OTP
     booking.cancelOTPHash = undefined;
     booking.cancelOTPExpires = undefined;
     booking.cancelOTPAttempts = 0;
-
     await booking.save();
 
-    // 1️⃣ Send Cancellation Email Immediately
+    // Send Cancellation Email Immediately
     const cancelConfirmHTML = await ejs.renderFile(
       path.join(
         __dirname,
@@ -388,56 +358,19 @@ module.exports.verifyCancelOTP = async (req, res) => {
       html: cancelConfirmHTML,
     });
 
-    // 2️⃣ Delay Refund Processing (5 Seconds)
-    setTimeout(async () => {
-      try {
-        const refund = await razorpay.payments.refund(
-          booking.razorpayPaymentId,
-          {
-            amount: booking.totalAmount * 100,
-          },
-        );
+    // 🔥 Only Initiate Refund (Do NOT Update Status)
+    await razorpay.payments.refund(booking.razorpayPaymentId, {
+      amount: booking.totalAmount * 100,
+    });
 
-        booking.bookingStatus = "cancelled";
-        booking.paymentStatus = "refunded";
-
-        await booking.save();
-
-        // 3️⃣ Send Refund Email After Refund Success
-        const refundHTML = await ejs.renderFile(
-          path.join(__dirname, "../views/emails/message/refundProcessed.ejs"),
-          {
-            username: booking.user.username,
-            listingTitle: booking.listing.title,
-            totalAmount: booking.totalAmount,
-            refundId: refund.id,
-            refundStatus: refund.status,
-            mailStyle,
-          },
-        );
-
-        await sendEmail({
-          to: booking.user.email,
-          subject: "Your Refund Has Been Successfully Processed",
-          html: refundHTML,
-        });
-      } catch (refundError) {
-        console.error("Refund Error:", refundError);
-      }
-    }, 5000); // 5 second delay
-
-    delete req.session.cancelResendAttemptsLeft;
-
-    req.flash("success", "Booking Cancelled Successfully.");
+    req.flash("success", "Refund Initiated Successfully.");
 
     req.session.save(() => {
       res.redirect("/bookings");
     });
   } catch (err) {
-    console.error("Cancellation Error:", err);
-
-    req.flash("error", "Something Went Wrong. Please Try Again.");
-
+    console.error("Refund Initiation Error:", err);
+    req.flash("error", "Refund Failed. Please Contact Support.");
     res.redirect("/bookings");
   }
 };
