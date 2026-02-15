@@ -75,8 +75,15 @@ module.exports.renderVerifyEmailForm = async (req, res) => {
     return res.redirect("/signup");
   }
 
+  // Get attempts from session
+  const resendAttemptsLeft =
+    typeof req.session.resendAttemptsLeft !== "undefined"
+      ? req.session.resendAttemptsLeft
+      : null;
+
   res.render("users/verifyEmail.ejs", {
     otpExpiry: user.emailOTPExpires ? user.emailOTPExpires.getTime() : 0,
+    resendAttemptsLeft,
   });
 };
 

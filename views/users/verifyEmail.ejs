@@ -42,6 +42,14 @@
         </button>
       </form>
 
+      <!-- attempts left  -->
+      <% if (resendAttemptsLeft !== null) { %>
+        <p class="text-danger text-center mt-2">
+            Resend Attempts Left: <%= resendAttemptsLeft %>
+        </p>
+      <% } %>
+      <!--ends here-->
+
       <script>
         window.otpExpiry = <%= otpExpiry || 0 %>;
         console.log("OTP Expiry:", window.otpExpiry);

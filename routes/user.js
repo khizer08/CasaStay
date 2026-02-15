@@ -4,6 +4,8 @@ const wrapAsync = require("../utils/wrapAsync");
 const passport = require("passport");
 const { saveRedirectUrl } = require("../middleware.js");
 const userController = require("../controllers/users.js");
+const { otpResendLimiter } = require("../utils/rateLimit");
+const { storeResendAttempts } = require("../middleware");
 
 // SignUp GET and POST route
 router
@@ -34,7 +36,12 @@ router
   .post(wrapAsync(userController.verifyEmail));
 
 // Resend OTP
-router.post("/resend-otp", wrapAsync(userController.resendOTP));
+router.post(
+  "/resend-otp",
+  otpResendLimiter,
+  storeResendAttempts,
+  wrapAsync(userController.resendOTP),
+);
 
 // Forgot password
 router
