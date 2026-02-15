@@ -62,11 +62,12 @@ module.exports.validateReview = (req, res, next) => {
   }
 };
 
-
 // for storing the attempts for current IP
-module.exports.storeResendAttempts = (req, res, next) => {
-  if (req.rateLimit) {
-    req.session.resendAttemptsLeft = req.rateLimit.remaining;
-  }
-  next();
+module.exports.storeResendAttempts = (sessionKey) => {
+  return (req, res, next) => {
+    if (req.rateLimit) {
+      req.session[sessionKey] = req.rateLimit.remaining;
+    }
+    next();
+  };
 };

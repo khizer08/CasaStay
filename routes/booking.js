@@ -2,8 +2,15 @@ const express = require("express");
 const router = express.Router({ mergeParams: true });
 
 const wrapAsync = require("../utils/wrapAsync");
-const { isLoggedIn } = require("../middleware");
+const { isLoggedIn, storeResendAttempts } = require("../middleware"); //"storeResendAttempts" is used because "express rate limiter" stores the session for each "IP", so we are using this feature to track current user.
+
+const { createOtpResendLimiter } = require("../utils/rateLimit");
+
 const bookingController = require("../controllers/bookings");
+
+const paymentResendLimiter = createOtpResendLimiter();
+const cancelResendLimiter = createOtpResendLimiter();
+
 
 //to get users booking page.
 router.get("/", isLoggedIn, wrapAsync(bookingController.renderMyBookings));
@@ -26,6 +33,8 @@ router.get(
 router.post(
   "/:id/send-payment-otp",
   isLoggedIn,
+  paymentResendLimiter,
+  storeResendAttempts("paymentResendAttemptsLeft"),
   wrapAsync(bookingController.sendPaymentOTP),
 );
 
@@ -46,6 +55,8 @@ router.get(
 router.post(
   "/:id/send-cancel-otp",
   isLoggedIn,
+  cancelResendLimiter,
+  storeResendAttempts("cancelResendAttemptsLeft"),
   wrapAsync(bookingController.sendCancelOTP),
 );
 

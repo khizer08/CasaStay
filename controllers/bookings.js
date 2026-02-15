@@ -169,11 +169,17 @@ module.exports.renderVerifyPaymentPage = async (req, res) => {
     return res.redirect("/listings");
   }
 
+  const paymentResendAttemptsLeft =
+    typeof req.session.paymentResendAttemptsLeft !== "undefined"
+      ? req.session.paymentResendAttemptsLeft
+      : null;
+
   res.render("bookings/verifyPayment.ejs", {
     booking,
     otpExpiry: booking.paymentOTPExpires
       ? booking.paymentOTPExpires.getTime()
       : 0,
+    paymentResendAttemptsLeft,
   });
 };
 
@@ -202,6 +208,8 @@ module.exports.verifyPaymentOTP = async (req, res) => {
   booking.paymentOTPExpires = undefined;
 
   await booking.save();
+
+  delete req.session.paymentResendAttemptsLeft; // after successful payment reset attempts.
 
   const bookingHTML = await ejs.renderFile(
     path.join(__dirname, "../views/emails/message/bookingConfirmation.ejs"),
@@ -294,11 +302,17 @@ module.exports.renderVerifyCancelPage = async (req, res) => {
     return res.redirect("/bookings");
   }
 
+  const cancelResendAttemptsLeft =
+    typeof req.session.cancelResendAttemptsLeft !== "undefined"
+      ? req.session.cancelResendAttemptsLeft
+      : null;
+
   res.render("bookings/verifyCancel.ejs", {
     booking,
     otpExpiry: booking.cancelOTPExpires
       ? booking.cancelOTPExpires.getTime()
       : 0,
+    cancelResendAttemptsLeft,
   });
 };
 
@@ -403,8 +417,10 @@ module.exports.verifyCancelOTP = async (req, res) => {
     });
   }, 10000);
 
+  delete req.session.cancelResendAttemptsLeft; // after successful payment reset attempts.
+  req.flash("success", "Booking Cancelled Successfully.");
+
   req.session.save(() => {
     res.redirect("/bookings");
   });
-  req.flash("success", "Booking Cancelled Successfully.");
 };

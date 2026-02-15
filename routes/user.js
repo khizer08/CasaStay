@@ -4,8 +4,11 @@ const wrapAsync = require("../utils/wrapAsync");
 const passport = require("passport");
 const { saveRedirectUrl } = require("../middleware.js");
 const userController = require("../controllers/users.js");
-const { otpResendLimiter } = require("../utils/rateLimit");
-const { storeResendAttempts } = require("../middleware");
+const { createOtpResendLimiter } = require("../utils/rateLimit");
+const { storeResendAttempts } = require("../middleware"); // "express rate limiter" stores the session for each "IP", so we are using this feature to track current user.
+
+const emailResendLimiter = createOtpResendLimiter();
+const resetResendLimiter = createOtpResendLimiter();
 
 // SignUp GET and POST route
 router
@@ -38,8 +41,8 @@ router
 // Resend OTP
 router.post(
   "/resend-otp",
-  otpResendLimiter,
-  storeResendAttempts,
+  emailResendLimiter,
+  storeResendAttempts("resendAttemptsLeft"),
   wrapAsync(userController.resendOTP),
 );
 
@@ -56,6 +59,11 @@ router
   .post(wrapAsync(userController.resetPassword));
 
 // Resend reset OTP
-router.post("/resend-reset-otp", wrapAsync(userController.resendResetOTP));
+router.post(
+  "/resend-reset-otp",
+  resetResendLimiter,
+  storeResendAttempts("resetResendAttemptsLeft"),
+  wrapAsync(userController.resendResetOTP),
+);
 
 module.exports = router;
