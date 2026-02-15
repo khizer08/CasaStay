@@ -158,7 +158,7 @@ module.exports.verifyRazorpayPayment = async (req, res) => {
     return res.status(400).json({ success: false });
   }
 
-  // 🔥 Only Save Payment Details — DO NOT Confirm Here
+  // Only Save Payment Details — DO NOT Confirm Here
   await Booking.findByIdAndUpdate(bookingId, {
     razorpayPaymentId: razorpay_payment_id,
     razorpaySignature: razorpay_signature,
@@ -358,7 +358,7 @@ module.exports.verifyCancelOTP = async (req, res) => {
       html: cancelConfirmHTML,
     });
 
-    // 🔥 Only Initiate Refund (Do NOT Update Status)
+    // Only Initiate Refund (Do NOT Update Status)
     await razorpay.payments.refund(booking.razorpayPaymentId, {
       amount: booking.totalAmount * 100,
     });

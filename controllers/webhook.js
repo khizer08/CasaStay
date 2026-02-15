@@ -10,7 +10,7 @@ module.exports.handleRazorpayWebhook = async (req, res) => {
     const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
     const signature = req.headers["x-razorpay-signature"];
 
-    // 🔒 Verify Signature Using Raw Buffer
+    // Verify Signature Using Raw Buffer
     const expectedSignature = crypto
       .createHmac("sha256", secret)
       .update(req.body) // raw buffer (important)
@@ -24,9 +24,7 @@ module.exports.handleRazorpayWebhook = async (req, res) => {
     const body = JSON.parse(req.body.toString());
     const event = body.event;
 
-    /* ======================================================
-       PAYMENT CAPTURED
-    ====================================================== */
+    //  PAYMENT CAPTURED
     if (event === "payment.captured") {
       const payment = body.payload.payment.entity;
 
@@ -42,7 +40,7 @@ module.exports.handleRazorpayWebhook = async (req, res) => {
 
         await booking.save();
 
-        // 📧 Send Booking Confirmation Email
+        // Send Booking Confirmation Email
         const bookingHTML = await ejs.renderFile(
           path.join(
             __dirname,
@@ -68,9 +66,7 @@ module.exports.handleRazorpayWebhook = async (req, res) => {
       }
     }
 
-    /* ======================================================
-       REFUND PROCESSED
-    ====================================================== */
+    // refund process
     if (event === "refund.processed") {
       const refund = body.payload.refund.entity;
 
@@ -84,7 +80,7 @@ module.exports.handleRazorpayWebhook = async (req, res) => {
 
         await booking.save();
 
-        // 📧 Send Refund Confirmation Email
+        // Send Refund Confirmation Email
         const refundHTML = await ejs.renderFile(
           path.join(__dirname, "../views/emails/message/refundProcessed.ejs"),
           {

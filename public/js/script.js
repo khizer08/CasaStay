@@ -1,36 +1,40 @@
 // Example starter JavaScript for disabling form submissions if there are invalid fields
 (() => {
-  'use strict'
+  "use strict";
 
   // Fetch all the forms we want to apply custom Bootstrap validation styles to
-  const forms = document.querySelectorAll('.needs-validation')
+  const forms = document.querySelectorAll(".needs-validation");
 
   // Loop over them and prevent submission
-  Array.from(forms).forEach(form => {
-    form.addEventListener('submit', event => {
-      if (!form.checkValidity()) {
-        event.preventDefault()
-        event.stopPropagation()
-      }
+  Array.from(forms).forEach((form) => {
+    form.addEventListener(
+      "submit",
+      (event) => {
+        if (!form.checkValidity()) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
 
-      form.classList.add('was-validated')
-    }, false)
-  })
-})()
+        form.classList.add("was-validated");
+      },
+      false,
+    );
+  });
+})();
 
 //togglers-functionality
-let taxSwitch=document.getElementById("switchCheckDefault");
+let taxSwitch = document.getElementById("switchCheckDefault");
 
-    taxSwitch.addEventListener("click",()=>{
-        let taxInfo=document.getElementsByClassName("tax-info");
-        for(info of taxInfo){
-            if(info.style.display!="inline"){
-                info.style.display="inline";
-            }else{
-                info.style.display="none";
-            }
-        }
-    });
+taxSwitch.addEventListener("click", () => {
+  let taxInfo = document.getElementsByClassName("tax-info");
+  for (info of taxInfo) {
+    if (info.style.display != "inline") {
+      info.style.display = "inline";
+    } else {
+      info.style.display = "none";
+    }
+  }
+});
 
 //arrow-btn-next-icon-functionality
 const filters = document.getElementById("filters");
@@ -56,11 +60,10 @@ arrowBtn.addEventListener("click", (e) => {
 
   currentPage = Math.min(currentPage, maxPage);
 
-
   if (currentPage < maxPage) {
     currentPage++;
-  }else{
-    currentPage=0;
+  } else {
+    currentPage = 0;
   }
 
   const scrollAmount =
@@ -71,7 +74,7 @@ arrowBtn.addEventListener("click", (e) => {
 
   filters.scrollTo({
     left: scrollAmount,
-    behavior: "smooth"
+    behavior: "smooth",
   });
 });
 
@@ -83,8 +86,8 @@ function updateArrowVisibility() {
   }
 }
 
-window.addEventListener("load", ()=>{
-  requestAnimationFrame(updateArrowVisibility)
+window.addEventListener("load", () => {
+  requestAnimationFrame(updateArrowVisibility);
 });
 window.addEventListener("resize", () => {
   currentPage = 0;
