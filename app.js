@@ -23,6 +23,8 @@ const userRouter = require("./routes/user.js"); // requiring the whole "users" r
 const port = 8080;
 const app = express();
 
+app.set("trust proxy", 1); //  Required For Render (Rate Limiter Behind Proxy).
+
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
