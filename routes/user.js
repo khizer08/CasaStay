@@ -7,9 +7,15 @@ const userController = require("../controllers/users.js");
 const { createOtpResendLimiter } = require("../utils/rateLimit");
 const { storeResendAttempts } = require("../middleware"); // "express rate limiter" stores the session for each "IP", so we are using this feature to track current user.
 
-const emailResendLimiter = createOtpResendLimiter(() => "/verify-email");
+const emailResendLimiter = createOtpResendLimiter(
+  () => "/verify-email",
+  "email",
+);
 
-const resetResendLimiter = createOtpResendLimiter(() => "/reset-password");
+const resetResendLimiter = createOtpResendLimiter(
+  () => "/reset-password",
+  "reset",
+);
 
 // SignUp GET and POST route
 router

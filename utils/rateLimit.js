@@ -1,8 +1,7 @@
 const rateLimit = require("express-rate-limit");
 const MongoStore = require("rate-limit-mongo");
-require("dotenv").config();
 
-const createOtpResendLimiter = (redirectPathFn) => {
+const createOtpResendLimiter = (redirectPathFn, limiterName) => {
   return rateLimit({
     windowMs: 10 * 60 * 1000,
     max: 3,
@@ -10,7 +9,15 @@ const createOtpResendLimiter = (redirectPathFn) => {
     store: new MongoStore({
       uri: process.env.ATLASDB_URL,
       collectionName: "rateLimitResendOTP",
+      expireTimeMs: 10 * 60 * 1000,
     }),
+
+    keyGenerator: (req) => {
+      // Use user ID if logged in, otherwise fallback to IP
+      return req.user
+        ? `${limiterName}_${req.user._id}`
+        : `${limiterName}_${req.ip}`;
+    },
 
     standardHeaders: true,
     legacyHeaders: false,

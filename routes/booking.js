@@ -10,10 +10,12 @@ const bookingController = require("../controllers/bookings");
 
 const paymentResendLimiter = createOtpResendLimiter(
   (req) => `/bookings/${req.params.id}/verify-payment`,
+  "payment",
 );
 
 const cancelResendLimiter = createOtpResendLimiter(
   (req) => `/bookings/${req.params.id}/verify-cancel`,
+  "cancel",
 );
 
 //to get users booking page.
