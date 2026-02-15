@@ -53,10 +53,10 @@
         </button>
       </form>
 
-      <!-- attempts left  -->
-      <% if (cancelResendAttempts!== null) { %>
+      <!-- Attempts Left -->
+      <% if (typeof cancelResendAttemptsLeft !== "undefined" && cancelResendAttemptsLeft !== null) { %>
         <p class="text-danger text-center mt-2">
-            Resend Attempts Left: <%= cancelResendAttempts %>
+          Resend Attempts Left: <%= cancelResendAttemptsLeft %>
         </p>
       <% } %>
       <!--ends here-->
