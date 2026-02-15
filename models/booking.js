@@ -74,6 +74,18 @@ const bookingSchema = new Schema(
     cancelOTPExpires: {
       type: Date,
     },
+
+    // otp attempts
+    paymentResendAttempts: {
+      type: Number,
+      default: 0,
+    },
+
+    cancelResendAttempts: {
+      type: Number,
+      default: 0,
+    },
+    //ends here
   },
   { timestamps: true },
 );

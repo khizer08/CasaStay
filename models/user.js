@@ -39,6 +39,16 @@ const userSchema = new Schema({
     type: Date,
   },
   // till here
+
+  // otp attemps
+  emailOTPAttempts: {
+    type: Number,
+    default: 0,
+  },
+  emailOTPLastSentAt: {
+    type: Date,
+  },
+  //till here
 });
 
 userSchema.plugin(passportLocalMongoose);

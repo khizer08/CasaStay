@@ -77,10 +77,10 @@ module.exports.renderVerifyEmailForm = async (req, res) => {
 
   // Get attempts from session
   const resendAttemptsLeft =
-  typeof req.session.resendAttemptsLeft !== "undefined"
-  ? req.session.resendAttemptsLeft
-  : null;
-  
+    typeof req.session.resendAttemptsLeft !== "undefined"
+      ? req.session.resendAttemptsLeft
+      : null;
+
   res.render("users/verifyEmail.ejs", {
     otpExpiry: user.emailOTPExpires ? user.emailOTPExpires.getTime() : 0,
     resendAttemptsLeft,
@@ -91,33 +91,33 @@ module.exports.renderVerifyEmailForm = async (req, res) => {
 module.exports.verifyEmail = async (req, res, next) => {
   try {
     const { otp } = req.body;
-    
+
     if (!otp) {
       req.flash("error", "OTP Is Required");
       return res.redirect("/verify-email");
     }
-    
+
     const otpHash = hashOTP(otp);
-    
+
     const user = await User.findOne({
       emailOTPHash: otpHash,
       emailOTPExpires: { $gt: Date.now() },
     });
-    
+
     if (!user) {
       req.flash("error", "Invalid Or Expired OTP");
       return res.redirect("/verify-email");
     }
-    
+
     user.isEmailVerified = true;
     user.emailOTPHash = undefined;
     user.emailOTPExpires = undefined;
     user.emailOTPAttempts = 0;
-    
+
     delete req.session.resendAttemptsLeft; //This resets attempts after success.
-    
+
     await user.save();
-    
+
     const welcomeHTML = await ejs.renderFile(
       path.join(__dirname, "../views/emails/message/welcome.ejs"),
       {
@@ -125,13 +125,13 @@ module.exports.verifyEmail = async (req, res, next) => {
         mailStyle,
       },
     );
-    
+
     await sendEmail({
       to: user.email,
       subject: "Welcome To CasaStay 🏡 Your Journey Starts Here!",
       html: welcomeHTML,
     });
-    
+
     req.login(user, (err) => {
       if (err) {
         return next(err);
@@ -153,7 +153,7 @@ module.exports.resendOTP = async (req, res) => {
     const user = await User.findOne({
       isEmailVerified: false,
     }).sort({ createdAt: -1 });
-    
+
     if (!user) {
       req.flash(
         "error",
@@ -161,12 +161,31 @@ module.exports.resendOTP = async (req, res) => {
       );
       return res.redirect("/signup");
     }
-    
-    if (user.emailOTPExpires && Date.now() < user.emailOTPExpires) {
-      req.flash("error", "Please Wait Before Requesting A New OTP.");
+
+    const MAX_ATTEMPTS = 3;
+    const WINDOW_TIME = 10 * 60 * 1000; // 10 minutes
+
+    // Reset attempts if window expired
+    if (
+      user.emailOTPLastSentAt &&
+      Date.now() - user.emailOTPLastSentAt > WINDOW_TIME
+    ) {
+      user.emailOTPAttempts = 0;
+    }
+
+    if (user.emailOTPAttempts >= MAX_ATTEMPTS) {
+      const timeLeft = WINDOW_TIME - (Date.now() - user.emailOTPLastSentAt);
+
+      const minutesLeft = Math.ceil(timeLeft / 60000);
+
+      req.flash(
+        "error",
+        `Resend OTP Limit Reached. Please Try After ${minutesLeft} Minute(s).`,
+      );
+
       return res.redirect("/verify-email");
     }
-    
+
     await sendOTP({
       target: user,
       hashField: "emailOTPHash",
@@ -180,8 +199,15 @@ module.exports.resendOTP = async (req, res) => {
       }),
       recipientEmail: user.email,
     });
-    
-    req.flash("success", "A new OTP Has Been Sent To Your Email.");
+
+    user.emailOTPAttempts += 1;
+    user.emailOTPLastSentAt = Date.now();
+    await user.save();
+
+    req.session.resendAttemptsLeft = MAX_ATTEMPTS - user.emailOTPAttempts;
+
+    req.flash("success", "A New OTP Has Been Sent To Your Email.");
+
     res.redirect("/verify-email");
   } catch (err) {
     req.flash("error", err.message);
@@ -197,9 +223,9 @@ module.exports.renderLoginForm = (req, res) => {
 
 module.exports.login = async (req, res) => {
   // this module decides after login what actions to be taken.
-  
+
   const user = req.user;
-  
+
   if (!user.isEmailVerified) {
     await sendOTP({
       target: user,
@@ -214,20 +240,20 @@ module.exports.login = async (req, res) => {
       }),
       recipientEmail: user.email,
     });
-    
+
     req.logout(() => {});
-    
+
     req.flash(
       "error",
       "Email Not Verified. A New OTP Has Been Sent To Your Email.",
     );
-    
+
     return res.redirect("/verify-email");
   }
-  
+
   req.flash("success", "Welcome Back To CasaStay");
   const redirectUrl = res.locals.redirectUrl || "/listings";
-  
+
   req.session.save(() => {
     res.redirect(redirectUrl);
   });
@@ -255,11 +281,11 @@ module.exports.renderResetPasswordForm = async (req, res) => {
     req.flash("error", "Session Expired. Please Try Again.");
     return res.redirect("/forgot-password");
   }
-  
+
   const user = await User.findOne({
     email: req.session.resetEmail,
   });
-  
+
   // Get attempts from session
   const resetResendAttemptsLeft =
     typeof req.session.resetResendAttemptsLeft !== "undefined"
@@ -310,36 +336,65 @@ module.exports.sendResetOTP = async (req, res) => {
 };
 
 module.exports.resendResetOTP = async (req, res) => {
-  const email = req.session.resetEmail;
+  try {
+    const email = req.session.resetEmail;
 
-  if (!email) {
-    req.flash("error", "Session Expired. Please Try Again.");
-    return res.redirect("/forgot-password");
+    if (!email) {
+      req.flash("error", "Session Expired. Please Try Again.");
+      return res.redirect("/forgot-password");
+    }
+
+    const user = await User.findOne({ email });
+
+    const MAX_ATTEMPTS = 3;
+    const WINDOW_TIME = 10 * 60 * 1000;
+
+    if (
+      user.resetOTPLastSentAt &&
+      Date.now() - user.resetOTPLastSentAt > WINDOW_TIME
+    ) {
+      user.resetOTPAttempts = 0;
+    }
+
+    if (user.resetOTPAttempts >= MAX_ATTEMPTS) {
+      const timeLeft = WINDOW_TIME - (Date.now() - user.resetOTPLastSentAt);
+
+      const minutesLeft = Math.ceil(timeLeft / 60000);
+
+      req.flash(
+        "error",
+        `Resend OTP Limit Reached. Please Try After ${minutesLeft} Minute(s).`,
+      );
+
+      return res.redirect("/reset-password");
+    }
+
+    await sendOTP({
+      target: user,
+      hashField: "resetOTPHash",
+      expiryField: "resetOTPExpires",
+      subject: "New OTP — CasaStay 🔐",
+      template: "otp.ejs",
+      templateData: (otp) => ({
+        username: user.username,
+        otp,
+        otpStyle,
+      }),
+      recipientEmail: user.email,
+    });
+
+    user.resetOTPAttempts += 1;
+    user.resetOTPLastSentAt = Date.now();
+    await user.save();
+
+    req.session.resetResendAttemptsLeft = MAX_ATTEMPTS - user.resetOTPAttempts;
+
+    req.flash("success", "A New OTP Has Been Sent.");
+    res.redirect("/reset-password");
+  } catch (err) {
+    req.flash("error", err.message);
+    res.redirect("/reset-password");
   }
-
-  const user = await User.findOne({ email });
-
-  if (user.resetOTPExpires && Date.now() < user.resetOTPExpires) {
-    req.flash("error", "Please Wait Before Requesting A New OTP.");
-    return res.redirect("/reset-password");
-  }
-
-  await sendOTP({
-    target: user,
-    hashField: "resetOTPHash",
-    expiryField: "resetOTPExpires",
-    subject: "New OTP — CasaStay 🔐",
-    template: "otp.ejs",
-    templateData: (otp) => ({
-      username: user.username,
-      otp,
-      otpStyle,
-    }),
-    recipientEmail: user.email,
-  });
-
-  req.flash("success", "A New OTP Has Been Sent.");
-  res.redirect("/reset-password");
 };
 
 module.exports.resetPassword = async (req, res) => {
@@ -374,7 +429,7 @@ module.exports.resetPassword = async (req, res) => {
   await user.save();
 
   delete req.session.resetEmail;
-  delete req.session.resetResendAttemptsLeft;//This resets attempts after success.
+  delete req.session.resetResendAttemptsLeft; //This resets attempts after success.
 
   req.flash("success", "Password Updated Successfully. Please Login.");
   req.session.save(() => {
