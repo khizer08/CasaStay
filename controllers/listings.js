@@ -89,6 +89,11 @@ module.exports.createListing = async (req, res) => {
   let url = req.file.path;
   let filename = req.file.filename;
 
+  // remove empty category before creating
+  if (req.body.listing.category === "") {
+    delete req.body.listing.category;
+  }
+
   const newListing = new Listing(req.body.listing); // understand "req.body.listing" [hint:- new.ejs form]
 
   // map part
@@ -139,6 +144,11 @@ module.exports.updateListing = async (req, res) => {
   if (!listing) {
     req.flash("error", "Your Listing Was Deleted!"); // key message pair.
     return res.redirect("/listings");
+  }
+
+  // remove empty category before updating
+  if (req.body.listing.category === "") {
+    delete req.body.listing.category;
   }
 
   //map updating logic begin here.
