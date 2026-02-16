@@ -31,7 +31,7 @@ module.exports.signup = async (req, res, next) => {
 
     const newUser = new User({ email, username });
     const registeredUser = await User.register(newUser, password);
-    console.log(registeredUser);
+    // console.log(registeredUser);
 
     registeredUser.emailOTPAttempts = 0;
     registeredUser.isEmailVerified = false;
