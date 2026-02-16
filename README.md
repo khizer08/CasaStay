@@ -1,1 +1,4 @@
-# production and local setup done :)
+# install dependencies:-
+npm install
+# start the server:-
+nodemon app.js / node app.js
