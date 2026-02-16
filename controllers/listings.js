@@ -91,7 +91,7 @@ module.exports.createListing = async (req, res) => {
 
   // remove empty category before creating
   if (req.body.listing.category === "") {
-    delete req.body.listing.category;
+    req.body.listing.category = undefined;
   }
 
   const newListing = new Listing(req.body.listing); // understand "req.body.listing" [hint:- new.ejs form]
@@ -148,7 +148,7 @@ module.exports.updateListing = async (req, res) => {
 
   // remove empty category before updating
   if (req.body.listing.category === "") {
-    delete req.body.listing.category;
+    req.body.listing.category = undefined;
   }
 
   //map updating logic begin here.
