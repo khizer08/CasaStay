@@ -11,15 +11,22 @@
     <a class="text-logo d-none d-sm-block me-3 text-decoration-none" href="/listings">CasaStay</a>
 
     <!-- Searchbar-->
-    <form class="d-flex mx-auto search-form" role="search">
-      <input
-        class="form-control search-inp"
-        type="search"
-        placeholder="Search location"
-      />
-      <button class="btn search-btn ms-2" type="submit">
-        <i class="fa-solid fa-magnifying-glass"></i>
-      </button>
+    <form class="d-flex mx-auto search-form" 
+      role="search" 
+      action="/listings" 
+      method="GET">
+
+        <input
+          class="form-control search-inp"
+          type="search"
+          name="search"
+          placeholder="Search Location"
+          value="<%= typeof search !== 'undefined' ? search : '' %>"
+        />
+
+        <button class="btn search-btn ms-2" type="submit">
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </button>
     </form>
 
     <!-- Hamburger -->

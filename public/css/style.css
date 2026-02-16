@@ -287,6 +287,21 @@ body {
   background: linear-gradient(to right, transparent, white);
 }
 
+/* removing individual icons default style  */
+#filters a {
+  text-decoration: none;
+  color: inherit;
+}
+
+#filters a:visited {
+  color: inherit;
+}
+
+#filters a:focus {
+  outline: none;
+}
+/* end  */
+
 /* individual icons */
 .filter {
   text-align: center;

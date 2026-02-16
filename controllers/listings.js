@@ -3,9 +3,35 @@ const { getCoordinates } = require("../utils/geocode");
 const Booking = require("../models/booking");
 
 module.exports.index = async (req, res) => {
-  // this module is used to list all listings.
-  const allListings = await Listing.find({});
-  res.render("listings/index.ejs", { allListings });
+  const { search, category } = req.query;
+
+  let filter = {};
+
+  // Location Or Country Search
+  if (search && search.trim() !== "") {
+    const searchRegex = { $regex: search.trim(), $options: "i" };
+
+    filter.$or = [{ location: searchRegex }, { country: searchRegex }];
+  }
+
+  // Category Filter
+  if (category && category.trim() !== "") {
+    filter.category = category.trim();
+  }
+
+  const allListings = await Listing.find(filter);
+
+  // If Search Or Category Applied And No Results
+  if ((search || category) && allListings.length === 0) {
+    req.flash("error", "No Listings Found For Your Search.");
+    return res.redirect("/listings");
+  }
+
+  res.render("listings/index.ejs", {
+    allListings,
+    search,
+    category,
+  });
 };
 
 module.exports.renderNewForm = (req, res) => {

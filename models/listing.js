@@ -19,9 +19,30 @@ const listingSchema = new Schema({
   },
   location: {
     type: String,
+    required: true,
+    index: true,
   },
   country: {
     type: String,
+  },
+
+  category: {
+    type: String,
+    enum: [
+      "Trending",
+      "Rooms",
+      "Iconic Cities",
+      "Mountains",
+      "Castles",
+      "Amazing Pools",
+      "Camping",
+      "Farms",
+      "Arctic",
+      "Domes",
+      "Boats",
+    ],
+    default: null,
+    index: true,
   },
 
   //map integration
