@@ -29,26 +29,30 @@ const userSchema = new Schema({
     type: Number,
     default: 0,
   },
+
+  emailOTPLastSentAt: {
+    type: Date,
+  },
   // till here
 
   // resetOTP
   resetOTPHash: {
     type: String,
   },
+
   resetOTPExpires: {
     type: Date,
   },
-  // till here
 
-  // otp attemps
-  emailOTPAttempts: {
+  resetOTPAttempts: {
     type: Number,
     default: 0,
   },
-  emailOTPLastSentAt: {
+
+  resetOTPLastSentAt: {
     type: Date,
   },
-  //till here
+  // till here
 });
 
 userSchema.plugin(passportLocalMongoose);

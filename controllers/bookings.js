@@ -234,11 +234,6 @@ module.exports.renderVerifyCancelPage = async (req, res) => {
     return res.redirect("/bookings");
   }
 
-  const cancelResendAttemptsLeft =
-    typeof req.session.cancelResendAttemptsLeft !== "undefined"
-      ? req.session.cancelResendAttemptsLeft
-      : null;
-
   res.render("bookings/verifyCancel.ejs", {
     booking,
     otpExpiry: booking.cancelOTPExpires

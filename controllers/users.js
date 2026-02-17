@@ -75,10 +75,12 @@ module.exports.renderVerifyEmailForm = async (req, res) => {
     return res.redirect("/signup");
   }
 
-  // Get attempts from session
+  const MAX_ATTEMPTS = 3;
+
+  // Get attempts from mongo
   const resendAttemptsLeft =
-    typeof req.session.resendAttemptsLeft !== "undefined"
-      ? req.session.resendAttemptsLeft
+    typeof user.emailOTPAttempts === "number"
+      ? MAX_ATTEMPTS - user.emailOTPAttempts
       : null;
 
   res.render("users/verifyEmail.ejs", {
@@ -113,8 +115,6 @@ module.exports.verifyEmail = async (req, res, next) => {
     user.emailOTPHash = undefined;
     user.emailOTPExpires = undefined;
     user.emailOTPAttempts = 0;
-
-    delete req.session.resendAttemptsLeft; //This resets attempts after success.
 
     await user.save();
 
@@ -204,8 +204,6 @@ module.exports.resendOTP = async (req, res) => {
     user.emailOTPLastSentAt = Date.now();
     await user.save();
 
-    req.session.resendAttemptsLeft = MAX_ATTEMPTS - user.emailOTPAttempts;
-
     req.flash("success", "A New OTP Has Been Sent To Your Email.");
 
     res.redirect("/verify-email");
@@ -286,10 +284,12 @@ module.exports.renderResetPasswordForm = async (req, res) => {
     email: req.session.resetEmail,
   });
 
-  // Get attempts from session
+  const MAX_ATTEMPTS = 3;
+  // Get attempts from mongo
+
   const resetResendAttemptsLeft =
-    typeof req.session.resetResendAttemptsLeft !== "undefined"
-      ? req.session.resetResendAttemptsLeft
+    typeof user.resetOTPAttempts === "number"
+      ? MAX_ATTEMPTS - user.resetOTPAttempts
       : null;
 
   res.render("users/resetPassword.ejs", {
@@ -300,7 +300,6 @@ module.exports.renderResetPasswordForm = async (req, res) => {
 
 module.exports.sendResetOTP = async (req, res) => {
   // after we click forgot_password to get otp to the registerd email
-
   try {
     const { email } = req.body;
 
@@ -312,6 +311,8 @@ module.exports.sendResetOTP = async (req, res) => {
     }
 
     req.session.resetEmail = user.email;
+
+    const MAX_ATTEMPTS = 3;
 
     await sendOTP({
       target: user,
@@ -327,8 +328,16 @@ module.exports.sendResetOTP = async (req, res) => {
       recipientEmail: user.email,
     });
 
+    // Initialize Attempts Properly
+    user.resetOTPAttempts = 1;
+    user.resetOTPLastSentAt = Date.now();
+    await user.save();
+
     req.flash("success", "OTP Sent To Your Email.");
-    res.redirect("/reset-password");
+
+    req.session.save(() => {
+      res.redirect("/reset-password");
+    });
   } catch (err) {
     req.flash("error", err.message);
     res.redirect("/forgot-password");
@@ -358,7 +367,6 @@ module.exports.resendResetOTP = async (req, res) => {
 
     if (user.resetOTPAttempts >= MAX_ATTEMPTS) {
       const timeLeft = WINDOW_TIME - (Date.now() - user.resetOTPLastSentAt);
-
       const minutesLeft = Math.ceil(timeLeft / 60000);
 
       req.flash(
@@ -366,7 +374,9 @@ module.exports.resendResetOTP = async (req, res) => {
         `Resend OTP Limit Reached. Please Try After ${minutesLeft} Minute(s).`,
       );
 
-      return res.redirect("/reset-password");
+      return req.session.save(() => {
+        res.redirect("/reset-password");
+      });
     }
 
     await sendOTP({
@@ -387,10 +397,11 @@ module.exports.resendResetOTP = async (req, res) => {
     user.resetOTPLastSentAt = Date.now();
     await user.save();
 
-    req.session.resetResendAttemptsLeft = MAX_ATTEMPTS - user.resetOTPAttempts;
-
     req.flash("success", "A New OTP Has Been Sent.");
-    res.redirect("/reset-password");
+
+    return req.session.save(() => {
+      res.redirect("/reset-password");
+    });
   } catch (err) {
     req.flash("error", err.message);
     res.redirect("/reset-password");
@@ -429,7 +440,6 @@ module.exports.resetPassword = async (req, res) => {
   await user.save();
 
   delete req.session.resetEmail;
-  delete req.session.resetResendAttemptsLeft; //This resets attempts after success.
 
   req.flash("success", "Password Updated Successfully. Please Login.");
   req.session.save(() => {
