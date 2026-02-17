@@ -1,5 +1,6 @@
 const cloudinary = require("cloudinary").v2;
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
+const multer = require("multer"); //  added
 
 cloudinary.config({
   //the name which we are using (cloud_name,api_key,api_secret) these has to be given the same name as done here , we cannot give our own name.
@@ -12,11 +13,25 @@ const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
     folder: "casastay_DEV",
-    allowedFormats: ["jpg", "png", "pdf", "jpeg"],
+    resource_type: "image",
+    allowedFormats: ["jpg", "png", "jpeg"],
+  },
+});
+
+//  Only Allow Image Formats Here
+const upload = multer({
+  storage,
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ["image/jpeg", "image/png", "image/jpg"];
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error("Only JPG, JPEG, PNG Images Are Allowed"), false);
+    }
   },
 });
 
 module.exports = {
   cloudinary,
-  storage,
+  upload, //  export upload instead of storage
 };

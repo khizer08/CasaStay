@@ -14,6 +14,7 @@ const flash = require("connect-flash");
 const passport = require("passport");
 const LocalStrategy = require("passport-local");
 const User = require("./models/user.js");
+const multerErrorHandler = require("./utils/multerErrorHandler"); // image upload (create+edit) validation.
 
 const listingRouter = require("./routes/listing.js"); // requiring the whole "listings" related routes.
 const reviewRouter = require("./routes/review.js"); // requiring the whole "reviews" related routes.
@@ -107,6 +108,8 @@ app.use("/listings", listingRouter); // using the "listingRouter" route, any rou
 app.use("/listings/:id/reviews", reviewRouter); // using the "reviewRouter" route, any route which is found in the "reviews" module will default start with "/reviews".
 app.use("/", userRouter); // using the "users" route, any route which is found in the "users" module will default start with "/".
 app.use("/bookings", bookingRouter); // using the "bookingRouter" route, any route which is found in the "bookings" module will default start with "/".
+
+app.use(multerErrorHandler); // image upload (create+edit) validation.
 
 //for any route that doesnt exist.
 app.use((req, res, next) => {
