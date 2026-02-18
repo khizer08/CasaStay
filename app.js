@@ -104,6 +104,11 @@ app.use((req, res, next) => {
 //   res.render("listings/home.ejs");
 // });
 
+// Root redirect
+app.get("/", (req, res) => {
+  res.redirect("/listings");
+});
+
 app.use("/listings", listingRouter); // using the "listingRouter" route, any route which is found in the "listings" module will default start with "/listings".
 app.use("/listings/:id/reviews", reviewRouter); // using the "reviewRouter" route, any route which is found in the "reviews" module will default start with "/reviews".
 app.use("/", userRouter); // using the "users" route, any route which is found in the "users" module will default start with "/".
