@@ -80,11 +80,6 @@ const sessionOptions = {
   },
 };
 
-//Home Page
-// app.get("/",(req,res)=>{
-//     res.send("home page");
-// });
-
 app.use(session(sessionOptions)); // once we use this middleware ,for all routes a session default cookie will be sent to client .
 app.use(flash()); // flash has to be used before the routes which requires the functionality of "flash".
 
@@ -103,6 +98,11 @@ app.use((req, res, next) => {
   res.locals.currUser = req.user;
   next();
 });
+
+//Home Page
+// app.get("/", (req, res) => {
+//   res.render("listings/home.ejs");
+// });
 
 app.use("/listings", listingRouter); // using the "listingRouter" route, any route which is found in the "listings" module will default start with "/listings".
 app.use("/listings/:id/reviews", reviewRouter); // using the "reviewRouter" route, any route which is found in the "reviews" module will default start with "/reviews".
