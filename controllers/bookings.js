@@ -278,7 +278,9 @@ module.exports.sendCancelOTP = async (req, res) => {
       `Resend OTP Limit Reached. Please Try After ${minutesLeft} Minute(s).`,
     );
 
-    return res.redirect(`/bookings/${id}/verify-cancel`);
+    return req.session.save(() => {
+      res.redirect(`/bookings/${id}/verify-cancel`);
+    });
   }
 
   await sendOTP({
@@ -316,7 +318,7 @@ module.exports.verifyCancelOTP = async (req, res) => {
 
   if (!booking) {
     req.flash("error", "Invalid Or Expired OTP.");
-    return res.redirect("/bookings");
+    return res.redirect(`/bookings/${id}/verify-cancel`);
   }
 
   if (booking.paymentStatus !== "paid") {

@@ -60,7 +60,9 @@ module.exports.signup = async (req, res, next) => {
     });
   } catch (err) {
     req.flash("error", err.message);
-    res.redirect("/signup");
+    return req.session.save(() => {
+      res.redirect("/signup");
+    });
   }
 };
 
@@ -96,7 +98,9 @@ module.exports.verifyEmail = async (req, res, next) => {
 
     if (!otp) {
       req.flash("error", "OTP Is Required");
-      return res.redirect("/verify-email");
+      return req.session.save(() => {
+        return res.redirect("/verify-email");
+      });
     }
 
     const otpHash = hashOTP(otp);
@@ -108,7 +112,9 @@ module.exports.verifyEmail = async (req, res, next) => {
 
     if (!user) {
       req.flash("error", "Invalid Or Expired OTP");
-      return res.redirect("/verify-email");
+      return req.session.save(() => {
+        return res.redirect("/verify-email");
+      });
     }
 
     user.isEmailVerified = true;
@@ -429,7 +435,9 @@ module.exports.resetPassword = async (req, res) => {
 
   if (!user) {
     req.flash("error", "Invalid Or Expired OTP.");
-    return res.redirect("/reset-password");
+    return req.session.save(() => {
+      res.redirect("/reset-password");
+    });
   }
 
   await user.setPassword(password);
