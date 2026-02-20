@@ -1,0 +1,164 @@
+<% layout('/layouts/landingboiler') -%>
+
+<section class="hero-section">
+  <div class="container text-center">
+    <h1 class="hero-title mb-4">CasaStay</h1>
+
+    <p class="lead hero-subtitle mb-4">
+      Book unique stays. Host properties. Experience backend-authoritative
+      payments.
+    </p>
+
+    <a href="/listings" class="get-started-btn mb-3 d-inline-block">
+      GET STARTED
+    </a>
+
+    <!-- ABOUT -->
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <h2 class="fw-bold mb-2">About CasaStay</h2>
+      </div>
+    </div>
+
+    <!-- FEATURES -->
+    <div class="features-wrapper position-relative mb-5">
+      <div class="features-scroll" id="featureScroll">
+        <div class="row flex-nowrap g-4">
+          <!-- Card 1 -->
+          <div class="col-lg-4 col-md-6">
+            <div class="card feature-card h-100 p-3 text-center">
+              <div class="feature-icon mb-3">
+                <i class="fa-solid fa-credit-card"></i>
+              </div>
+              <h5 class="fw-bold">Backend-Authoritative Payments</h5>
+              <p class="text-muted">
+                Razorpay integration with HMAC signature validation and
+                webhook-based confirmation.
+              </p>
+            </div>
+          </div>
+
+          <!-- Card 2 -->
+          <div class="col-lg-4 col-md-6">
+            <div class="card feature-card h-100 p-3 text-center">
+              <div class="feature-icon mb-3">
+                <i class="fa-solid fa-rotate-left"></i>
+              </div>
+              <h5 class="fw-bold">Automated Refund Processing</h5>
+              <p class="text-muted">
+                Refund lifecycle securely verified through backend webhook
+                events.
+              </p>
+            </div>
+          </div>
+
+          <!-- Card 3 -->
+          <div class="col-lg-4 col-md-6">
+            <div class="card feature-card h-100 p-3 text-center">
+              <div class="feature-icon mb-3">
+                <i class="fa-solid fa-lock"></i>
+              </div>
+              <h5 class="fw-bold">Database-Controlled OTP Engine</h5>
+              <p class="text-muted">
+                Hashed OTP storage, expiry enforcement and DB-driven attempt
+                tracking.
+              </p>
+            </div>
+          </div>
+
+          <!-- Card 4 -->
+          <div class="col-lg-4 col-md-6">
+            <div class="card feature-card h-100 p-3 text-center">
+              <div class="feature-icon mb-3">
+                <i class="fa-solid fa-user-shield"></i>
+              </div>
+              <h5 class="fw-bold">Secure Authentication & Sessions</h5>
+              <p class="text-muted">
+                Passport.js authentication with MongoDB-backed sessions and
+                protected routes.
+              </p>
+            </div>
+          </div>
+
+          <!-- Card 5 -->
+          <div class="col-lg-4 col-md-6">
+            <div class="card feature-card h-100 p-3 text-center">
+              <div class="feature-icon mb-3">
+                <i class="fa-solid fa-calendar-check"></i>
+              </div>
+              <h5 class="fw-bold">State-Driven Booking Lifecycle</h5>
+              <p class="text-muted">
+                Structured booking enums ensuring transactional integrity.
+              </p>
+            </div>
+          </div>
+
+          <!-- Card 6 -->
+          <div class="col-lg-4 col-md-6">
+            <div class="card feature-card h-100 p-3 text-center">
+              <div class="feature-icon mb-3">
+                <i class="fa-solid fa-house-user"></i>
+              </div>
+              <h5 class="fw-bold">Host & Manage Listings</h5>
+              <p class="text-muted">
+                Create, update and control properties with ownership-based
+                authorization.
+              </p>
+            </div>
+          </div>
+
+          <!-- Card 7 -->
+          <div class="col-lg-4 col-md-6">
+            <div class="card feature-card h-100 p-3 text-center">
+              <div class="feature-icon mb-3">
+                <i class="fa-solid fa-map-location-dot"></i>
+              </div>
+              <h5 class="fw-bold">Geocoding & Interactive Maps</h5>
+              <p class="text-muted">
+                Latitude/longitude storage with dynamic Leaflet map integration.
+              </p>
+            </div>
+          </div>
+
+          <!-- Card 8 -->
+          <div class="col-lg-4 col-md-6">
+            <div class="card feature-card h-100 p-3 text-center">
+              <div class="feature-icon mb-3">
+                <i class="fa-solid fa-envelope"></i>
+              </div>
+              <h5 class="fw-bold">Modular Email Infrastructure</h5>
+              <p class="text-muted">
+                Styled EJS templates for OTPs, confirmations, cancellations and
+                refunds.
+              </p>
+            </div>
+          </div>
+
+          <!-- Card 9 -->
+          <div class="col-lg-4 col-md-6">
+            <div class="card feature-card h-100 p-3 text-center">
+              <div class="feature-icon mb-3">
+                <i class="fa-solid fa-cloud"></i>
+              </div>
+              <h5 class="fw-bold">Production Deployment</h5>
+              <p class="text-muted">
+                MongoDB Atlas, Cloudinary and Render deployment with secure
+                configuration.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="arrow-btn arrow-left" id="featureArrowLeft">
+        <i class="fa-solid fa-angle-left"></i>
+      </button>
+
+      <button class="arrow-btn" id="featureArrow">
+        <i class="fa-solid fa-angle-right"></i>
+      </button>
+    </div>
+  </div>
+</section>
+
+<script src="/js/landing.js"></script>

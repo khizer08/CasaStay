@@ -1,0 +1,114 @@
+/*LANDING PAGE */
+
+.hero-section {
+  min-height: 100vh;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0.75)),
+    url("/images/background.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  display: flex;
+  align-items: center;
+}
+
+.hero-title {
+  font-family: "Pacifico", cursive;
+  font-size: 4rem;
+  color: #fe424d;
+}
+
+.hero-subtitle {
+  color: #333;
+}
+
+.get-started-btn {
+  background-color: #fe424d;
+  color: #fff;
+  padding: 12px 40px;
+  border-radius: 50px;
+  font-weight: 600;
+  transition: 0.3s ease;
+  text-decoration: none;
+}
+
+.get-started-btn:hover {
+  background-color: #e03a43;
+  color: #fff;
+  transform: translateY(-2px);
+}
+
+.features-wrapper {
+  position: relative;
+  overflow: hidden;
+  padding: 0 4rem; /* space on both left & right */
+  margin-left: 0;
+}
+
+.features-scroll {
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  padding-bottom: 10px;
+}
+
+.features-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.feature-card {
+  border: none;
+  border-radius: 30px;
+  transition: 0.3s ease;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+  height: 100%;
+}
+
+.feature-card:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 6px 20px rgba(0, 0, 0, 0.12),
+    0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+.feature-icon {
+  font-size: 2rem;
+  color: #fe424d;
+}
+
+/* Arrow Button */
+.arrow-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  border: none;
+  background: #fe424d;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+  z-index: 10;
+}
+
+#featureArrow {
+  right: 10px;
+}
+
+#featureArrowLeft {
+  left: 10px;
+}
+
+.arrow-left {
+  left: 10px;
+  right: auto;
+}
+
+.arrow-btn:hover {
+  background: #e03a43;
+}
+
+/* ends here */
