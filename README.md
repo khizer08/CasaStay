@@ -3,7 +3,6 @@
 Production-Ready Airbnb-Like Full-Stack Web Application  
 Built for real-world backend architecture, secure OTP systems, and webhook-controlled RazorPay payment processing.
 
----
 
 # Project Setup & Running Locally
 
