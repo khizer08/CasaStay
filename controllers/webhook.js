@@ -74,11 +74,13 @@ module.exports.handleRazorpayWebhook = async (req, res) => {
         razorpayPaymentId: refund.payment_id,
       }).populate("user listing");
 
-      if (booking && booking.paymentStatus !== "refunded") {
-        booking.paymentStatus = "refunded";
-        booking.bookingStatus = "cancelled";
-
-        await booking.save();
+      if (booking) {
+        // Prevent duplicate DB updates but allow email
+        if (booking.paymentStatus !== "refunded") {
+          booking.paymentStatus = "refunded";
+          booking.bookingStatus = "cancelled";
+          await booking.save();
+        }
 
         // Send Refund Confirmation Email
         const refundHTML = await ejs.renderFile(
