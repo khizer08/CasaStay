@@ -11,8 +11,9 @@ module.exports.getCoordinates = async (location, country) => {
         limit: 1,
       },
       headers: {
-        "User-Agent": "CasaStay-App",
+        "User-Agent": "CasaStay/1.0 (https://khizer.casastay.in)",
       },
+      timeout: 10000,
     },
   );
 

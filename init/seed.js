@@ -46,6 +46,8 @@ async function seedDB() {
     obj.lng = coords.lng;
 
     await Listing.create(obj);
+
+    await new Promise((resolve) => setTimeout(resolve, 1200));
   }
 
   console.log("Database Seeded Successfully");
