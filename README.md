@@ -263,5 +263,4 @@ CASASTAY/
 - Clean modular MVC architecture
 - Backend-authoritative payment lifecycle
 
-
 CasaStay is built with backend-first authority, database-driven OTP control, webhook-controlled financial state changes, and production-level security standards.
