@@ -247,7 +247,6 @@ CASASTAY/
 ├── schema.js
 ├── package.json
 └── README.md
-```
 
 # Current Status
 
