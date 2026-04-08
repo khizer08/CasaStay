@@ -204,8 +204,6 @@ Webhook is backend-authoritative.
    - `bookingStatus → cancelled`
 8. Refund confirmation email sent
 
----
-
 # Razorpay Webhook Integration
 
 - `express.raw()` for raw body parsing
